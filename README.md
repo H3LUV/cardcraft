@@ -18,3 +18,5 @@ Required runtime secret for live AI:
 - `GEMINI_API_KEY`
 
 Do not commit the actual API key to this repository.
+
+Deployment trigger: 2026-08-07 10:17 KST.
