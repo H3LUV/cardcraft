@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cardcraft AI Design Specification",
+  "type": "object",
+  "required": ["orientation", "family", "palette", "typography", "logos"],
+  "properties": {
+    "orientation": {"enum": ["horizontal", "vertical"]},
+    "family": {"enum": ["minimal", "institution", "dual", "bands", "editorial", "premium", "travel", "bold", "split"]},
+    "palette": {
+      "type": "object",
+      "required": ["primary", "secondary", "accent", "background", "text"],
+      "properties": {
+        "primary": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}$"},
+        "secondary": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}$"},
+        "accent": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}$"},
+        "background": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}$"},
+        "text": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}$"}
+      }
+    },
+    "typography": {
+      "type": "object",
+      "properties": {
+        "company": {"type": "string"},
+        "name": {"type": "string"},
+        "title": {"type": "string"},
+        "contact": {"type": "string"},
+        "address": {"type": "string"},
+        "slogan": {"type": "string"}
+      }
+    },
+    "logos": {
+      "type": "object",
+      "properties": {
+        "primaryPosition": {"type": "string"},
+        "secondaryPosition": {"type": "string"},
+        "showSecondary": {"type": "boolean"}
+      }
+    },
+    "reasoningSummary": {"type": "string", "description": "User-visible design rationale only; no private chain of thought."}
+  }
+}
