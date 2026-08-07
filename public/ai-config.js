@@ -40,3 +40,12 @@ window.addEventListener('load', () => {
   s.dataset.cardcraftNavigationV13='true';
   document.head.appendChild(s);
 })();
+
+(function loadFinalEditorPosition(){
+  if(document.querySelector('script[data-cardcraft-final-position]'))return;
+  const s=document.createElement('script');
+  s.src='/final-editor-position.js?v=20260807-1503';
+  s.async=false;
+  s.dataset.cardcraftFinalPosition='true';
+  document.head.appendChild(s);
+})();
