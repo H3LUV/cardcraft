@@ -1,0 +1,81 @@
+/* Cardcraft V8 · floating live preview */
+.v8-floating-preview[hidden]{display:none!important}
+.v8-floating-preview{
+  position:fixed;
+  z-index:145;
+  width:min(370px,calc(100vw - 28px));
+  right:16px;
+  top:88px;
+  border:1px solid rgba(208,213,221,.95);
+  border-radius:15px;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 24px 64px rgba(16,24,40,.22),0 4px 12px rgba(16,24,40,.12);
+  backdrop-filter:blur(16px);
+  overflow:hidden;
+  transform:translateY(-8px) scale(.985);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s ease,transform .2s ease;
+}
+.v8-floating-preview.is-visible{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.v8-floating-head{height:48px;padding:0 10px 0 13px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #eaecf0;background:rgba(255,255,255,.92)}
+.v8-floating-title{min-width:0;flex:1}
+.v8-floating-title span{display:block;font-size:8px;line-height:1;font-weight:900;letter-spacing:.16em;color:#667085}
+.v8-floating-title strong{display:block;margin-top:5px;font-size:11px;color:#101828;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v8-floating-sides{display:flex;gap:2px;padding:3px;border-radius:7px;background:#f2f4f7}
+.v8-floating-sides button{height:25px;padding:0 9px;border:0;border-radius:5px;background:transparent;color:#667085;font-size:9px;font-weight:800}
+.v8-floating-sides button.active{background:#fff;color:#101828;box-shadow:0 1px 3px rgba(16,24,40,.13)}
+.v8-floating-icon{width:29px;height:29px;border:0;border-radius:7px;background:#f2f4f7;color:#475467;display:grid;place-items:center;font-size:13px;font-weight:900}
+.v8-floating-body{padding:13px;background:radial-gradient(circle at center,#edf1f6 0,#e4e9ef 100%)}
+.v8-floating-card{width:100%;aspect-ratio:96/56;background:#fff;box-shadow:0 12px 25px rgba(16,24,40,.18),0 2px 6px rgba(16,24,40,.12);overflow:hidden}
+.v8-floating-card svg{display:block;width:100%;height:100%}
+.v8-floating-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px;color:#667085;font-size:8px}
+.v8-floating-foot button{border:0;background:transparent;color:#344054;font-size:8px;font-weight:800;padding:3px 0}
+.v8-floating-preview.is-collapsed{width:230px}
+.v8-floating-preview.is-collapsed .v8-floating-body,.v8-floating-preview.is-collapsed .v8-floating-sides{display:none}
+.v8-floating-preview.is-collapsed .v8-floating-head{border-bottom:0}
+.v8-floating-preview.is-collapsed .v8-floating-title strong{max-width:120px}
+.v8-preview-spacer{display:none}
+
+/* Desktop: keep the original editor column stable while it is visible. */
+@media(min-width:821px){
+  .main-stage{align-self:start}
+  body.v7-admin .v8-floating-preview{top:126px}
+}
+
+@media(max-width:820px){
+  .v8-floating-preview{
+    top:auto;
+    right:10px;
+    left:10px;
+    bottom:10px;
+    width:auto;
+    max-height:min(46vh,330px);
+    border-radius:14px;
+    padding-bottom:max(0px,env(safe-area-inset-bottom));
+  }
+  .v8-floating-head{height:43px;padding-left:11px}
+  .v8-floating-title span{font-size:7px}
+  .v8-floating-title strong{font-size:10px;margin-top:4px}
+  .v8-floating-sides button{height:24px;padding:0 8px;font-size:8px}
+  .v8-floating-body{padding:9px 10px 8px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:9px}
+  .v8-floating-card{max-height:210px;margin:auto}
+  .v8-floating-foot{margin:0;display:flex;flex-direction:column;align-items:stretch;justify-content:center;min-width:61px;gap:7px}
+  .v8-floating-foot span{font-size:7px;line-height:1.35;text-align:center}
+  .v8-floating-foot button{height:30px;padding:0 7px;border-radius:7px;background:#fff;border:1px solid #d0d5dd;font-size:8px}
+  .v8-floating-preview.is-collapsed{left:auto;width:218px;bottom:10px}
+  .v8-floating-preview.is-collapsed .v8-floating-title strong{max-width:108px}
+  body.v8-preview-open{padding-bottom:190px}
+  body.v8-preview-open.v8-preview-collapsed{padding-bottom:58px}
+}
+
+@media(max-width:420px){
+  .v8-floating-preview{right:7px;left:7px;bottom:7px}
+  .v8-floating-head{gap:6px}
+  .v8-floating-title strong{max-width:105px}
+  .v8-floating-sides button{padding:0 7px}
+  .v8-floating-icon{width:27px;height:27px}
+  .v8-floating-body{grid-template-columns:minmax(0,1fr) 55px;column-gap:7px}
+}
+
+@media(prefers-reduced-motion:reduce){.v8-floating-preview{transition:none}}
