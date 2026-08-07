@@ -31,3 +31,12 @@ window.addEventListener('load', () => {
   if(document.querySelector('script[data-cardcraft-editor-v12]'))return;
   const s=document.createElement('script');s.src='/editor-v12.js?v=20260807-1414';s.async=false;s.dataset.cardcraftEditorV12='true';document.head.appendChild(s);
 })();
+
+(function loadNavigationV13(){
+  if(document.querySelector('script[data-cardcraft-navigation-v13]'))return;
+  const s=document.createElement('script');
+  s.src='/navigation-v13.js?v=20260807-1421';
+  s.async=false;
+  s.dataset.cardcraftNavigationV13='true';
+  document.head.appendChild(s);
+})();
