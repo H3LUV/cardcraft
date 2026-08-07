@@ -14,7 +14,6 @@
     }
     if(document.getElementById('cardcraftFinalEditorV12'))return;
 
-    // Remove legacy duplicate editors.
     document.querySelectorAll('.v5-detail-controls,#cardcraftFinalEditorV11,.cc-final-editor').forEach(el=>el.remove());
 
     state.custom.logoPosX=Number(state.custom.logoPosX)||0;
@@ -27,7 +26,22 @@
 
       const baseLogoSvg=logoSvg;
       logoSvg=function(x,y,size,color,bg,anchor='center'){
-        return baseLogoSvg(x+(Number(state.custom.logoPosX)||0),y+(Number(state.custom.logoPosY)||0),size,color,bg,anchor);
+        const dx=Number(state.custom.logoPosX)||0;
+        const dy=Number(state.custom.logoPosY)||0;
+        const scale=Math.max(.35,Math.min(9,Number(state.custom.logoScale)||1.5));
+        const maxW=anchor==='hero'?860:760;
+        const maxH=anchor==='hero'?500:400;
+        const renderW=Math.min(maxW,size*scale*1.45);
+        const renderH=Math.min(maxH,size*scale);
+        const offsetX=(size-renderW)/2;
+        const offsetY=(size-renderH)/2;
+        const desiredRenderX=x+dx+offsetX;
+        const desiredRenderY=y+dy+offsetY;
+        const safeRenderX=Math.max(0,Math.min(960-renderW,desiredRenderX));
+        const safeRenderY=Math.max(0,Math.min(560-renderH,desiredRenderY));
+        const safeX=safeRenderX-offsetX;
+        const safeY=safeRenderY-offsetY;
+        return `<svg x="0" y="0" width="960" height="560" viewBox="0 0 960 560" overflow="hidden">${baseLogoSvg(safeX,safeY,size,color,bg,anchor)}</svg>`;
       };
 
       const baseRenderCard=renderCard;
@@ -88,7 +102,7 @@
         <div class="cc12-text-list">${rows}</div>
       </div>
       <div class="cc12-block">
-        <div class="cc12-block-title"><strong>로고 편집</strong><span>현재 선택한 시안 기준</span></div>
+        <div class="cc12-block-title"><strong>로고 편집</strong><span>명함 경계 안에서만 이동·확대됩니다</span></div>
         <div class="cc12-logo-grid">
           <label><span>좌우 <b id="cc12LogoXValue">0</b></span><input id="cc12LogoX" type="range" min="-300" max="300" step="5"></label>
           <label><span>상하 <b id="cc12LogoYValue">0</b></span><input id="cc12LogoY" type="range" min="-220" max="220" step="5"></label>
