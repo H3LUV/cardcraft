@@ -24,6 +24,18 @@ window.addEventListener('load', () => {
   scheduleRepaint();
 });
 
+(function migrateGenericSampleName(){
+  const apply=()=>{
+    if(typeof state==='undefined'||!state.data){setTimeout(apply,100);return;}
+    if(state.data.name==='김남우'){
+      state.data.name='홍길동';
+      if(typeof persist==='function')persist();
+      if(typeof renderAll==='function')renderAll();
+    }
+  };
+  apply();
+})();
+
 (function loadFinalEditorV12(){
   const removeLegacy=()=>document.querySelectorAll('.v5-detail-controls,#cardcraftFinalEditorV11,.cc-final-editor').forEach(el=>el.remove());
   removeLegacy();
