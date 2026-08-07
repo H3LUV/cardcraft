@@ -124,9 +124,6 @@ window.addEventListener('load', () => {
 
   new MutationObserver(scheduleRepaint).observe(results, { childList: true, subtree: true });
 
-  // Capture the Apply click before the original V10 handler. The original
-  // handler assigns categories that do not exist in the 100-template library;
-  // applying here keeps Cardcraft's base category/template model valid.
   results.addEventListener('click', event => {
     const button = event.target.closest('[data-ai-apply]');
     if (!button) return;
@@ -149,8 +146,6 @@ window.addEventListener('load', () => {
 
     if (typeof buildRecommendations === 'function') {
       buildRecommendations();
-      // buildRecommendations selects its first recommendation; restore the
-      // exact AI-mapped template afterwards so the applied design stays put.
       state.selectedId = template.id;
     }
     if (typeof persist === 'function') persist();
@@ -164,3 +159,15 @@ window.addEventListener('load', () => {
   scheduleRepaint();
   console.info('Cardcraft V10 distinct-layout bridge active');
 });
+
+// Cache-busted final editor loader. This uses a new asset path so stale 404s
+// from the earlier editor bundle cannot suppress the final-edit controls.
+(() => {
+  const id='cardcraft-editor-v11-loader';
+  if(document.getElementById(id)) return;
+  const script=document.createElement('script');
+  script.id=id;
+  script.src='/editor-v11.js?v=20260807-1131';
+  script.async=false;
+  document.head.appendChild(script);
+})();
