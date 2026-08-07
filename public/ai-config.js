@@ -70,3 +70,12 @@ window.addEventListener('load', () => {
   s.dataset.cardcraftEditorV14Extras='true';
   document.head.appendChild(s);
 })();
+
+(function loadBrandV15(){
+  if(document.querySelector('script[data-cardcraft-brand-v15]'))return;
+  const s=document.createElement('script');
+  s.src='/brand-v15.js?v=20260808-0528';
+  s.async=false;
+  s.dataset.cardcraftBrandV15='true';
+  document.head.appendChild(s);
+})();
