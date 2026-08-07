@@ -49,3 +49,12 @@ window.addEventListener('load', () => {
   s.dataset.cardcraftFinalPosition='true';
   document.head.appendChild(s);
 })();
+
+(function loadEditorV14Extras(){
+  if(document.querySelector('script[data-cardcraft-editor-v14-extras]'))return;
+  const s=document.createElement('script');
+  s.src='/editor-v14-extras.js?v=20260807-1520';
+  s.async=false;
+  s.dataset.cardcraftEditorV14Extras='true';
+  document.head.appendChild(s);
+})();
