@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "cardcraft",
+  "main": "./src/index.js",
+  "compatibility_date": "2026-08-07",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/health"],
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "single-page-application"
+  },
+  "vars": {
+    "AI_MODEL": "gemini-3.5-flash-lite",
+    "AI_DEMO_MODE": "false",
+    "AI_DAILY_LIMIT": "20",
+    "ALLOWED_ORIGIN": "*"
+  }
+}
