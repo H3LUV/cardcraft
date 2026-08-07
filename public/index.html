@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101828" />
+  <meta name="description" content="AI 브랜드 분석, 가로·세로 명함, 듀얼 로고와 항목별 폰트를 지원하는 명함 디자인 도구" />
+  <title>Cardcraft — 명함 시안 자동 생성기</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css?v=10.0" />
+  <link rel="stylesheet" href="./v5-editor.css?v=10.0" />
+  <link rel="stylesheet" href="./v6.css?v=10.0" />
+  <link rel="stylesheet" href="./v7.css?v=10.0" />
+  <link rel="stylesheet" href="./v8.css?v=10.0" />
+  <link rel="stylesheet" href="./v9.css?v=10.0" />
+  <link rel="stylesheet" href="./v10.css?v=10.0" />
+  <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-mark">C</div>
+        <div><strong>Cardcraft</strong><span>BUSINESS CARD STUDIO</span></div>
+      </div>
+      <div class="topbar-actions">
+        <div class="autosave"><span class="status-dot"></span> 자동 저장됨</div>
+        <button class="btn ghost" id="resetBtn">↶ 초기화</button>
+        <button class="btn secondary" id="saveBtn">▣ 프로젝트 저장</button>
+        <button class="btn primary" id="exportBtn">↓ PNG 내보내기</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero-strip">
+        <div>
+          <div class="eyebrow">✦ DESIGN WITHOUT THE DETOUR</div>
+          <h1>정보를 입력하면, 명함이 완성됩니다.</h1>
+          <p>디자인 툴을 배우지 않아도 됩니다. 브랜드 정보를 넣고 서로 다른 완성형 시안을 바로 비교하세요.</p>
+        </div>
+        <div class="hero-stat">
+          <span>100 TEMPLATE LIBRARY · PROJECT READINESS</span><strong id="completionText">84%</strong>
+          <div class="progress"><i id="completionBar" style="width:84%"></i></div>
+        </div>
+      </section>
+
+      <nav class="stepper" id="stepper">
+        <button class="step active" data-step="1"><span class="step-index">1</span><span><strong>정보 입력</strong><small>브랜드와 연락처</small></span></button>
+        <button class="step" data-step="2"><span class="step-index">2</span><span><strong>스타일 선택</strong><small>디자인 방향</small></span></button>
+        <button class="step" data-step="3"><span class="step-index">3</span><span><strong>시안 비교</strong><small>5개 결과 확인</small></span></button>
+        <button class="step" data-step="4"><span class="step-index">4</span><span><strong>최종 편집</strong><small>세부 조정 및 저장</small></span></button>
+      </nav>
+
+      <div class="workspace-grid">
+        <aside class="panel input-panel">
+          <div class="panel-heading">
+            <div><span class="section-label">01 · DETAILS</span><h2>명함에 들어갈 정보</h2></div><span class="required-note">필수 3개</span>
+          </div>
+          <div class="logo-drop">
+            <div class="logo-preview" id="logoPreview">▧</div>
+            <div><strong>로고 업로드</strong><span id="logoHint">PNG, JPG, SVG, AI(PDF 호환), PDF · 15MB 이하</span></div>
+            <div class="logo-upload-menu">
+              <button class="mini-upload" id="logoUploadButton" type="button" aria-haspopup="menu" aria-expanded="false">↑ 파일 선택 <span>▾</span></button>
+              <div class="logo-upload-panel" id="logoUploadPanel" role="menu" hidden>
+                <button type="button" data-logo-picker="image"><strong>이미지·SVG 선택</strong><small>PNG, JPG, WebP, SVG</small></button>
+                <button type="button" data-logo-picker="vector"><strong>AI·PDF 선택</strong><small>PDF 호환 AI 또는 PDF</small></button>
+                <button type="button" data-logo-picker="all"><strong>모든 파일에서 찾기</strong><small>확장자 필터 없이 선택</small></button>
+                <button type="button" id="removeLogoBg"><strong>현재 로고 배경 제거</strong><small>흰색 외곽 배경을 투명 처리</small></button>
+              </div>
+              <input id="logoInput" type="file" accept=".png,.PNG,.jpg,.JPG,.jpeg,.JPEG,.webp,.WEBP,.svg,.SVG,image/png,image/jpeg,image/webp,image/svg+xml" hidden />
+              <input id="logoVectorInput" type="file" accept=".ai,.AI,.pdf,.PDF,application/postscript,application/vnd.adobe.illustrator,application/pdf" hidden />
+              <input id="logoAllInput" type="file" hidden />
+            </div>
+          </div>
+          <div class="form-grid" id="formGrid"></div>
+        </aside>
+
+        <section class="main-stage">
+          <div class="stage-toolbar">
+            <div><span class="section-label">LIVE PREVIEW</span><h2 id="previewTitle">Quiet Grid</h2></div>
+            <div class="segmented"><button class="active" data-side="front">앞면</button><button data-side="back">뒷면</button></div>
+          </div>
+          <div class="card-stage">
+            <div class="measurement horizontal"><span>90 mm</span></div>
+            <div class="measurement vertical"><span>50 mm</span></div>
+            <div class="card-shadow" id="mainCard"></div>
+            <div class="stage-caption"><span><i class="bleed-dot"></i>완성 90 × 50mm · 도련 포함 96 × 56mm</span><span id="exportMeta">600dpi · 2268 × 1323px</span></div>
+          </div>
+          <div class="quick-customizer">
+            <div class="control-group"><div class="control-label">◉ <span>브랜드 컬러</span></div><div class="control-content"><input aria-label="브랜드 컬러" id="primaryColor" type="color"><input class="hex-input" id="primaryHex" aria-label="브랜드 컬러 HEX"></div></div>
+            <div class="control-group"><div class="control-label">T <span>글자 크기</span><output id="fontScaleValue"></output></div><div class="control-content"><input id="fontScale" aria-label="글자 크기" type="range" min="0.82" max="1.22" step="0.02"></div></div>
+            <div class="control-group"><div class="control-label">↕ <span>정보 간격</span><output id="spacingValue"></output></div><div class="control-content"><input id="spacing" aria-label="정보 간격" type="range" min="0.82" max="1.22" step="0.02"></div></div>
+            <div class="control-group"><div class="control-label">▧ <span>로고 크기</span><output id="logoScaleValue"></output></div><div class="control-content"><input id="logoScale" aria-label="로고 크기" type="range" min="0.35" max="9" step="0.05"></div></div>
+            <div class="control-group"><div class="control-label">≡ <span>정보 정렬</span></div><div class="control-content"><div class="icon-toggle"><button aria-label="왼쪽 정렬" data-align="left">≡</button><button aria-label="가운데 정렬" data-align="center">☰</button><button aria-label="오른쪽 정렬" data-align="right">≣</button></div></div></div>
+            <div class="control-group"><div class="control-label">⌗ <span>도련·안전영역</span></div><div class="control-content"><label class="switch"><input id="guideToggle" type="checkbox" aria-label="도련과 안전영역 표시"><span></span></label></div></div>
+            <div class="control-group"><div class="control-label">↓ <span>PNG 품질</span></div><div class="control-content"><select id="exportDpi" aria-label="PNG 해상도"><option value="300">300dpi · 표준</option><option value="600">600dpi · 고해상도</option></select></div></div>
+          </div>
+        </section>
+
+        <aside class="panel styles-panel">
+          <div class="panel-heading compact"><div><span class="section-label">02 · STYLE</span><h2>어떤 인상을 원하세요?</h2></div></div>
+          <div class="style-list" id="styleList"></div>
+          <div class="palette-block">
+            <div class="block-title"><span>COLOR SYSTEM</span><strong>현재 팔레트</strong></div>
+            <div class="palette-row"><label><input id="palettePrimary" type="color"><span id="palettePrimarySwatch"></span></label><label><input id="paletteBg" type="color"><span id="paletteBgSwatch"></span></label><label><input id="paletteText" type="color"><span id="paletteTextSwatch"></span></label></div>
+          </div>
+        </aside>
+      </div>
+
+      <section class="variants-section">
+        <div class="variants-heading">
+          <div><span class="section-label">03 · GENERATED CONCEPTS</span><h2 id="variantHeading">100개 디자인 중 추천 시안 5개</h2><p>20개 레이아웃 구조와 5개 아트디렉션으로 만든 100개 디자인 풀에서 5개씩 추천합니다.</p></div>
+          <div class="variant-actions">
+            <button class="btn secondary" id="libraryBtn">▦ 전체 100개 보기</button>
+            <button class="btn secondary" id="regenerateBtn">↻ 100개에서 다시 추천</button>
+          </div>
+        </div>
+        <div class="variant-grid" id="variantGrid"></div>
+      </section>
+    </main>
+    <div class="template-modal" id="templateModal" hidden>
+      <button class="template-backdrop" type="button" data-template-close aria-label="시안 목록 닫기"></button>
+      <section class="template-dialog" role="dialog" aria-modal="true" aria-labelledby="templateModalTitle">
+        <header class="template-dialog-header">
+          <div><span class="section-label">100 TEMPLATE LIBRARY</span><h2 id="templateModalTitle">전체 명함 디자인</h2><p>추천 5개 외에 전체 100개 시안을 직접 보고 선택할 수 있습니다.</p></div>
+          <button class="template-close" type="button" data-template-close aria-label="닫기">×</button>
+        </header>
+        <nav class="template-tabs" id="templateTabs"></nav>
+        <div class="template-library-grid" id="templateLibraryGrid"></div>
+      </section>
+    </div>
+    <div class="toast" id="toast" hidden>✓ <span></span></div>
+    <footer><span>CARDCRAFT V10 · AI DESIGN COPILOT · BRAND DESIGN ENGINE</span><span>90 × 50mm · 3mm BLEED · LOCAL AUTOSAVE</span></footer>
+  </div>
+  <script src="./app.js?v=10.0"></script>
+  <script src="./v5-editor.js?v=10.0"></script>
+  <script src="./monetization-config.js?v=10.0"></script>
+  <script src="./v6.js?v=10.0"></script>
+  <script src="./v7.js?v=10.0"></script>
+  <script src="./v8.js?v=10.0"></script>
+  <script src="./v9.js?v=10.0"></script>
+  <script src="./ai-config.js?v=10.0"></script>
+  <script src="./v10.js?v=10.0"></script>
+</body>
+</html>
