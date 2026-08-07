@@ -29,5 +29,5 @@ window.addEventListener('load', () => {
   removeLegacy();
   const observer=new MutationObserver(removeLegacy);observer.observe(document.documentElement,{childList:true,subtree:true});
   if(document.querySelector('script[data-cardcraft-editor-v12]'))return;
-  const s=document.createElement('script');s.src='/editor-v12.js?v=20260807-1255';s.async=false;s.dataset.cardcraftEditorV12='true';document.head.appendChild(s);
+  const s=document.createElement('script');s.src='/editor-v12.js?v=20260807-1414';s.async=false;s.dataset.cardcraftEditorV12='true';document.head.appendChild(s);
 })();
