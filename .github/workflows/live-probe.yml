@@ -20,18 +20,22 @@ jobs:
         run: |
           URL='https://cardcraft.ahrvks.workers.dev/'
           STATUS=''
-          BODY=''
           LIVE='false'
           VERSION='unknown'
-          for i in $(seq 1 20); do
+          NATIVE_RUNTIME='false'
+          for i in $(seq 1 24); do
             STATUS=$(curl -L -sS -o /tmp/cardcraft-live.html -w '%{http_code}' --max-time 20 "$URL" || true)
-            BODY=$(head -c 300000 /tmp/cardcraft-live.html 2>/dev/null || true)
-            if [ "$STATUS" = "200" ] && echo "$BODY" | grep -q 'Cardcraft' && echo "$BODY" | grep -q 'v12.js' && echo "$BODY" | grep -q 'v12.css'; then
+            BODY=$(head -c 350000 /tmp/cardcraft-live.html 2>/dev/null || true)
+            MON_STATUS=$(curl -L -sS -o /tmp/cardcraft-mon.js -w '%{http_code}' --max-time 20 "${URL}monetization.js?v=12.1" || true)
+            MON_BODY=$(head -c 100000 /tmp/cardcraft-mon.js 2>/dev/null || true)
+            BRIDGE_STATUS=$(curl -L -sS -o /tmp/cardcraft-bridge.js -w '%{http_code}' --max-time 20 "${URL}native-app-bridge.js?v=12.1" || true)
+            if [ "$STATUS" = "200" ] && echo "$BODY" | grep -q 'v12.js?v=12.1' && echo "$BODY" | grep -q 'native-app-bridge.js?v=12.1'; then
               LIVE='true'
-              VERSION='v12'
+              VERSION='v12.1'
+              if [ "$MON_STATUS" = '200' ] && echo "$MON_BODY" | grep -q 'nativeBillingConfigured' && [ "$BRIDGE_STATUS" = '200' ]; then NATIVE_RUNTIME='true'; fi
               break
             fi
-            sleep 20
+            sleep 15
           done
           HEALTH_STATUS=$(curl -L -sS -o /tmp/cardcraft-health.json -w '%{http_code}' --max-time 20 "${URL}health" || true)
           SESSION_STATUS=$(curl -L -sS -o /tmp/cardcraft-session.json -w '%{http_code}' --max-time 20 "${URL}api/session" || true)
@@ -39,6 +43,7 @@ jobs:
           SESSION_BODY=$(head -c 5000 /tmp/cardcraft-session.json 2>/dev/null || true)
           echo "live=$LIVE" >> "$GITHUB_OUTPUT"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "native_runtime=$NATIVE_RUNTIME" >> "$GITHUB_OUTPUT"
           echo "status=${STATUS:-000}" >> "$GITHUB_OUTPUT"
           echo "health_status=${HEALTH_STATUS:-000}" >> "$GITHUB_OUTPUT"
           echo "session_status=${SESSION_STATUS:-000}" >> "$GITHUB_OUTPUT"
@@ -53,6 +58,7 @@ jobs:
         env:
           LIVE: ${{ steps.probe.outputs.live }}
           VERSION: ${{ steps.probe.outputs.version }}
+          NATIVE_RUNTIME: ${{ steps.probe.outputs.native_runtime }}
           HTTP_STATUS: ${{ steps.probe.outputs.status }}
           HEALTH_STATUS: ${{ steps.probe.outputs.health_status }}
           SESSION_STATUS: ${{ steps.probe.outputs.session_status }}
@@ -67,6 +73,7 @@ jobs:
             const payload = JSON.stringify({
               live: process.env.LIVE === 'true',
               version: process.env.VERSION,
+              native_runtime: process.env.NATIVE_RUNTIME === 'true',
               http_status: process.env.HTTP_STATUS,
               health: {
                 ok: process.env.HEALTH_OK === 'true',
