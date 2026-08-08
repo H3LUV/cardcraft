@@ -3,10 +3,12 @@ name: Deploy Cardcraft Preview
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '.deploy/pages-status.json'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -38,3 +40,37 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Record successful deployment
+        uses: actions/github-script@v7
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const path = '.deploy/pages-status.json';
+            const payload = JSON.stringify({
+              status: 'deployed',
+              url: process.env.PAGE_URL,
+              source_sha: context.sha,
+              deployed_at: new Date().toISOString()
+            }, null, 2) + '\n';
+            let sha;
+            try {
+              const current = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path
+              });
+              sha = current.data.sha;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path,
+              message: 'chore: record Cardcraft Pages deployment [skip ci]',
+              content: Buffer.from(payload).toString('base64'),
+              sha
+            });
