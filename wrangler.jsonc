@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "cardcraft",
-  "main": "./src/index.js",
+  "main": "./src/main.js",
   "compatibility_date": "2026-08-07",
   "assets": {
     "directory": "./public",
@@ -14,6 +14,10 @@
     "AI_MODEL": "gemini-3.5-flash-lite",
     "AI_DEMO_MODE": "false",
     "AI_DAILY_LIMIT": "20",
-    "ALLOWED_ORIGIN": "*"
+    "ALLOWED_ORIGIN": "*",
+    "CARDCRAFT_MONETIZATION_MODE": "demo",
+    "CARDCRAFT_DOWNLOAD_PRICE": "1900",
+    "CARDCRAFT_UNLOCK_HOURS": "24",
+    "CARDCRAFT_REWARDED_AD_LIVE": "false"
   }
 }
