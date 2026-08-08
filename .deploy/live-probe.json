@@ -2,7 +2,17 @@
   "live": true,
   "version": "v12",
   "http_status": "200",
+  "health": {
+    "ok": true,
+    "status": "200",
+    "body": "{\"ok\":true,\"service\":\"cardcraft\",\"mode\":\"live\",\"provider\":\"gemini\",\"model\":\"gemini-3.5-flash-lite\"}"
+  },
+  "session": {
+    "ok": true,
+    "status": "200",
+    "body": "{\"ok\":true,\"mode\":\"mixed\",\"price\":1900,\"currency\":\"KRW\",\"paymentLive\":false,\"adLive\":true,\"products\":{\"png-download\":{\"id\":\"png-download\",\"name\":\"Cardcraft 고해상도 PNG 다운로드\",\"amount\":1900,\"currency\":\"KRW\",\"androidProductId\":\"cardcraft_export_png\"},\"vector-source\":{\"id\":\"vector-source\",\"name\":\"Cardcraft 편집용 벡터 원본 패키지\",\"amount\":3900,\"currency\":\"KRW\",\"androidProductId\":\"cardcraft_export_source\"}}}"
+  },
   "url": "https://cardcraft.ahrvks.workers.dev/",
-  "source_sha": "239c591078f92cafd5e5dab27a6a2d1e12fdcdb2",
-  "recorded_at": "2026-08-08T09:02:18.627Z"
+  "source_sha": "2bfb16aa2c7bf813a3e4c8e71d516170b322a326",
+  "recorded_at": "2026-08-08T09:03:28.245Z"
 }
