@@ -42,7 +42,7 @@
         <div class="cc-progress" id="ccProgress"><div class="cc-progress-ring"></div><h3 id="ccProgressTitle">처리 중입니다</h3><p id="ccProgressText">잠시만 기다려 주세요.</p></div>
         <div class="cc-ad-stage" id="ccAdStage"><div class="cc-ad-shell"><div class="cc-ad-demo"><span>REWARDED AD</span><strong>광고 테스트 재생 중</strong><p>광고를 끝까지 보면 AI 디자인 생성이 시작됩니다.</p><div class="cc-ad-count" id="ccAdCount">5초</div></div></div><div class="cc-ad-foot">광고 완료 후 디자인 생성을 자동으로 이어갑니다.</div></div>
         <div class="cc-error" id="ccError"></div>
-        <p class="cc-paywall-note" id="ccNote">결제 승인은 서버에서 다시 확인합니다. 결제 실패·취소 시 다운로드되지 않습니다.</p>
+        <p class="cc-paywall-note" id="ccNote">결제 승인 후 파일을 저장합니다.</p>
       </div>
     </section>`;
   document.body.appendChild(modal);
@@ -51,18 +51,20 @@
 
   const adConfigured=()=>Boolean(session.adLive&&cfg.rewardedAd?.adUnitPath);
   const paymentConfigured=()=>Boolean(session.paymentLive&&cfg.portOne?.storeId&&cfg.portOne?.channelKey);
+  const nativeAdsConfigured=()=>Boolean(window.CardcraftNativeAds?.available?.());
+  const nativeBillingConfigured=()=>Boolean(window.CardcraftNativeBilling?.available?.());
 
   function resetViews(){choiceGrid.hidden=false;progress.classList.remove('is-active');adStage.classList.remove('is-active');errorBox.classList.remove('is-active');errorBox.textContent='';busy=false;}
   function setGate(mode){
     gateMode=mode;resetViews();
-    const live=mode==='design'?adConfigured():paymentConfigured();
+    const live=mode==='design'?(nativeAdsConfigured()||adConfigured()):(nativeBillingConfigured()||paymentConfigured());
     modal.classList.toggle('is-demo',!live);
     if(mode==='design'){
       kickerEl.textContent='AI DESIGN';titleEl.textContent='광고를 보고 디자인 생성';descEl.textContent='보상형 광고 1회를 완료하면 AI가 새로운 명함 디자인 4안을 생성합니다.';
-      metaLabel.textContent='생성 방식';metaEl.textContent='AI 디자인 4안';choiceIcon.textContent='▶';choiceTitle.textContent='광고 보고 디자인 생성';choiceDesc.textContent='광고를 끝까지 시청하면 생성이 자동으로 시작됩니다.';choicePrice.textContent='무료';choicePrice.classList.add('free');noteEl.textContent='광고를 중간에 닫으면 디자인 생성은 시작되지 않습니다.';demoFlag.textContent='실제 광고 지면이 연결되기 전에는 5초 테스트 광고로 동작합니다.';
+      metaLabel.textContent='생성 방식';metaEl.textContent='AI 디자인 4안';choiceIcon.textContent='▶';choiceTitle.textContent='광고 보고 디자인 생성';choiceDesc.textContent='광고를 끝까지 시청하면 생성이 자동으로 시작됩니다.';choicePrice.textContent='무료';choicePrice.classList.add('free');noteEl.textContent='광고를 중간에 닫으면 디자인 생성은 시작되지 않습니다.';demoFlag.textContent=nativeAdsConfigured()?'Android 테스트 광고가 연결되어 있습니다.':'웹 테스트 광고 모드입니다.';
     }else{
-      kickerEl.textContent='DOWNLOAD';titleEl.textContent='최종 명함 다운로드';descEl.textContent='최종 파일 다운로드는 유료입니다. 결제가 완료되면 현재 고해상도 PNG를 저장합니다.';
-      metaLabel.textContent='현재 파일';metaEl.textContent=`PNG · ${document.getElementById('exportDpi')?.value||600}dpi`;choiceIcon.textContent='↓';choiceTitle.textContent='결제하고 PNG 다운로드';choiceDesc.textContent='현재 선택한 명함 면을 고해상도 PNG로 저장합니다.';choicePrice.textContent=`₩${money.format(Number(session.price)||Number(cfg.premiumPrice)||1900)}`;choicePrice.classList.remove('free');noteEl.textContent='결제 승인은 서버에서 다시 확인합니다. 결제 실패·취소 시 다운로드되지 않습니다.';demoFlag.textContent='PortOne 연결 전에는 결제 테스트 모드로 동작합니다.';
+      kickerEl.textContent='DOWNLOAD';titleEl.textContent='최종 명함 다운로드';descEl.textContent='PNG 완성본 또는 편집 가능한 벡터 원본을 선택할 수 있습니다.';
+      metaLabel.textContent='현재 파일';metaEl.textContent=`PNG · ${document.getElementById('exportDpi')?.value||600}dpi`;choiceIcon.textContent='↓';choiceTitle.textContent='PNG 다운로드';choiceDesc.textContent='현재 선택한 명함 면을 고해상도 PNG로 저장합니다.';choicePrice.textContent=`₩${money.format(Number(session.price)||Number(cfg.premiumPrice)||1900)}`;choicePrice.classList.remove('free');noteEl.textContent=nativeBillingConfigured()?'Google Play 결제가 완료되면 파일을 저장합니다.':'결제 승인 후 파일을 저장합니다.';demoFlag.textContent='웹 결제 테스트 모드입니다.';
     }
   }
   function openGate(mode){setGate(mode);modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');opened=true;document.body.style.overflow='hidden';}
@@ -79,11 +81,16 @@
     finally{exportBtn.disabled=false;exportBtn.textContent=originalExportLabel;}
   }
 
+  async function nativeRewardedAd(){
+    busy=true;showProgress('광고를 준비하고 있습니다','보상형 광고를 불러오는 중입니다.');
+    try{const result=await window.CardcraftNativeAds.showRewarded();if(!result?.granted)throw new Error('AD_NOT_GRANTED');busy=false;triggerDesignGeneration();}
+    catch(e){console.error(e);showError(/closed|cancel|not_granted/i.test(String(e?.message||''))?'광고를 끝까지 시청해야 디자인을 생성할 수 있습니다.':'광고를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');}
+  }
   function demoAd(){busy=true;choiceGrid.hidden=true;progress.classList.remove('is-active');adStage.classList.add('is-active');let left=5;adCount.textContent=`${left}초`;const timer=setInterval(()=>{left-=1;adCount.textContent=left>0?`${left}초`:'완료';if(left<=0){clearInterval(timer);busy=false;triggerDesignGeneration();}},1000);}
   function loadGpt(){if(window.googletag?.cmd)return Promise.resolve(window.googletag);return new Promise((resolve,reject)=>{const existing=document.querySelector('script[data-cc-gpt]');if(existing){existing.addEventListener('load',()=>resolve(window.googletag),{once:true});existing.addEventListener('error',reject,{once:true});return;}window.googletag=window.googletag||{cmd:[]};const s=document.createElement('script');s.async=true;s.src='https://securepubads.g.doubleclick.net/tag/js/gpt.js';s.dataset.ccGpt='1';s.onload=()=>resolve(window.googletag);s.onerror=reject;document.head.appendChild(s);});}
   async function liveRewardedAd(){
     const path=cfg.rewardedAd?.adUnitPath;if(!path){showError('보상형 광고 지면 ID가 아직 연결되지 않았습니다.');return;}
-    busy=true;showProgress('광고를 준비하고 있습니다','Google Ad Manager에서 광고 재고를 확인하는 중입니다.');
+    busy=true;showProgress('광고를 준비하고 있습니다','Google 광고 재고를 확인하는 중입니다.');
     try{
       await loadGpt();
       await new Promise((resolve,reject)=>{
@@ -104,6 +111,11 @@
     }catch(e){console.error(e);showError(e.message==='AD_CLOSED'?'광고가 끝나기 전에 닫혔습니다. 디자인 생성은 시작되지 않습니다.':e.message==='REWARDED_UNSUPPORTED'?'현재 브라우저에서는 보상형 광고를 표시할 수 없습니다.':'현재 재생 가능한 광고가 없습니다. 잠시 후 다시 시도해 주세요.');}
   }
 
+  async function nativePngPayment(){
+    busy=true;showProgress('결제를 준비하고 있습니다','Google Play 결제창을 여는 중입니다.');
+    try{const result=await window.CardcraftNativeBilling.purchase('cardcraft_export_png');if(!(result?.granted||result?.purchased))throw new Error('PURCHASE_NOT_GRANTED');busy=false;await runExport();}
+    catch(e){console.error(e);showError(/cancel|user_canceled/i.test(String(e?.message||''))?'결제가 취소되었습니다.':'결제를 완료하지 못했습니다.');}
+  }
   function makePaymentId(){return `cardcraft_${Date.now()}_${Math.random().toString(36).slice(2,10)}`;}
   async function demoPayment(){busy=true;showProgress('결제 테스트 진행 중','실제 결제는 발생하지 않습니다.');await new Promise(r=>setTimeout(r,1100));busy=false;await runExport();}
   async function livePayment(){
@@ -115,11 +127,19 @@
       const response=await window.PortOne.requestPayment({storeId:cfg.portOne.storeId,channelKey:cfg.portOne.channelKey,paymentId:order.paymentId||makePaymentId(),orderName:order.orderName||'Cardcraft PNG 다운로드',totalAmount:Number(order.amount)||Number(session.price)||1900,currency:order.currency||'KRW',payMethod:'CARD'});
       if(response?.code)throw new Error(response.message||'PAYMENT_CANCELLED');
       showProgress('결제를 확인하고 있습니다','결제사 승인 결과를 서버에서 확인합니다.');
-      const verified=await fetchJson(cfg.endpoints.completePayment,{method:'POST',body:JSON.stringify({paymentId:response.paymentId||order.paymentId})});if(!verified.granted)throw new Error('PAYMENT_NOT_VERIFIED');busy=false;await runExport();
-    }catch(e){console.error(e);showError(/cancel/i.test(e.message)?'결제가 취소되었습니다.':'결제를 완료하지 못했습니다. 결제 내역이 있다면 잠시 후 다시 확인해 주세요.');}
+      const verified=await fetchJson(cfg.endpoints.completePayment,{method:'POST',body:JSON.stringify({paymentId:response.paymentId||order.paymentId,product:'png-download'})});if(!verified.granted)throw new Error('PAYMENT_NOT_VERIFIED');busy=false;await runExport();
+    }catch(e){console.error(e);showError(/cancel/i.test(String(e.message))?'결제가 취소되었습니다.':'결제를 완료하지 못했습니다. 결제 내역이 있다면 잠시 후 다시 확인해 주세요.');}
   }
 
-  async function handlePrimary(){if(busy)return;if(gateMode==='design')return adConfigured()?liveRewardedAd():demoAd();return paymentConfigured()?livePayment():demoPayment();}
+  async function handlePrimary(){
+    if(busy)return;
+    if(gateMode==='design'){
+      if(nativeAdsConfigured())return nativeRewardedAd();
+      return adConfigured()?liveRewardedAd():demoAd();
+    }
+    if(nativeBillingConfigured())return nativePngPayment();
+    return paymentConfigured()?livePayment():demoPayment();
+  }
 
   exportBtn.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();openGate('download');},true);
   document.addEventListener('click',event=>{const button=event.target.closest?.('#v10AiRun');if(!button)return;if(bypassDesign){bypassDesign=false;return;}event.preventDefault();event.stopImmediatePropagation();openGate('design');},true);
