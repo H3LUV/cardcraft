@@ -1,0 +1,118 @@
+name: Build Cardcraft Android
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '.deploy/**'
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/pages-enable.yml'
+      - '.github/workflows/deploy-heartbeat.yml'
+      - '.github/workflows/cloudflare-deploy.yml'
+      - '.github/workflows/live-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install JS dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validate web runtime
+        run: npm run check
+      - name: Generate Capacitor Android project
+        run: |
+          rm -rf android
+          npx cap add android
+          npx cap sync android
+      - name: Install Cardcraft native plugins
+        shell: bash
+        run: |
+          TARGET='android/app/src/main/java/com/h3works/cardcraft'
+          mkdir -p "$TARGET"
+          cp native/android/com/h3works/cardcraft/*.java "$TARGET/"
+          python - <<'PY'
+          from pathlib import Path
+
+          gradle=Path('android/app/build.gradle')
+          s=gradle.read_text()
+          needle='dependencies {'
+          if needle not in s: raise SystemExit('Gradle dependencies block not found')
+          deps='''dependencies {\n    implementation "com.google.android.gms:play-services-ads:25.4.0"\n    implementation "com.android.billingclient:billing:9.1.0"'''
+          s=s.replace(needle,deps,1)
+          gradle.write_text(s)
+
+          manifest=Path('android/app/src/main/AndroidManifest.xml')
+          m=manifest.read_text()
+          if 'com.google.android.gms.ads.APPLICATION_ID' not in m:
+              marker='<application'
+              start=m.find(marker)
+              if start < 0: raise SystemExit('Application element not found')
+              close=m.find('>',start)
+              if close < 0: raise SystemExit('Application start tag invalid')
+              meta='''\n        <meta-data\n            android:name="com.google.android.gms.ads.APPLICATION_ID"\n            android:value="ca-app-pub-3940256099942544~3347511713" />'''
+              m=m[:close+1]+meta+m[close+1:]
+          manifest.write_text(m)
+          PY
+      - name: Build debug APK
+        id: apk
+        continue-on-error: true
+        working-directory: android
+        run: ./gradlew assembleDebug --stacktrace
+      - name: Upload APK
+        if: steps.apk.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: cardcraft-android-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
+      - name: Record Android build status
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          BUILD_OUTCOME: ${{ steps.apk.outcome }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = '.deploy/android-build.json';
+            const apkExists = fs.existsSync('android/app/build/outputs/apk/debug/app-debug.apk');
+            const payload = JSON.stringify({
+              status: process.env.BUILD_OUTCOME === 'success' && apkExists ? 'success' : 'failed',
+              outcome: process.env.BUILD_OUTCOME || 'unknown',
+              run_id: String(context.runId),
+              artifact: apkExists ? 'cardcraft-android-debug' : '',
+              package_id: 'com.h3works.cardcraft',
+              admob_mode: 'google-test-rewarded',
+              billing_products: ['cardcraft_export_png','cardcraft_export_source'],
+              source_sha: context.sha,
+              recorded_at: new Date().toISOString()
+            }, null, 2) + '\n';
+            let sha;
+            try {
+              const current = await github.rest.repos.getContent({ owner: context.repo.owner, repo: context.repo.repo, path });
+              sha = current.data.sha;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path,
+              message: 'chore: record Android build [skip ci]',
+              content: Buffer.from(payload).toString('base64'),
+              sha
+            });
