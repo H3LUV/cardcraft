@@ -6,25 +6,19 @@
   window.CARDCRAFT_NATIVE={isNative,platform};
   if(!isNative)return;
 
-  const plugins=cap?.Plugins||{};
-  const ads=plugins.CardcraftAds;
-  const billing=plugins.CardcraftBilling;
-  const files=plugins.CardcraftFiles;
+  const invoke=(plugin,method,options={})=>{
+    if(typeof cap?.nativePromise!=='function')return Promise.reject(new Error('CAPACITOR_NATIVE_BRIDGE_UNAVAILABLE'));
+    return cap.nativePromise(plugin,method,options);
+  };
 
   window.CardcraftNativeAds={
-    available:()=>!!ads?.showRewarded,
-    async showRewarded(){
-      if(!ads?.showRewarded)throw new Error('NATIVE_ADS_UNAVAILABLE');
-      return await ads.showRewarded({});
-    }
+    available:()=>typeof cap?.nativePromise==='function',
+    showRewarded:()=>invoke('CardcraftAds','showRewarded',{})
   };
 
   window.CardcraftNativeBilling={
-    available:()=>!!billing?.purchase,
-    async purchase(productId){
-      if(!billing?.purchase)throw new Error('NATIVE_BILLING_UNAVAILABLE');
-      return await billing.purchase({productId:String(productId||'')});
-    }
+    available:()=>typeof cap?.nativePromise==='function',
+    purchase:productId=>invoke('CardcraftBilling','purchase',{productId:String(productId||'')})
   };
 
   function bytesToBase64(bytes){
@@ -34,23 +28,18 @@
     return btoa(binary);
   }
   window.CardcraftNativeFiles={
-    available:()=>!!files?.save,
+    available:()=>typeof cap?.nativePromise==='function',
     async saveBlob(blob,name){
-      if(!files?.save)throw new Error('NATIVE_FILES_UNAVAILABLE');
       const bytes=new Uint8Array(await blob.arrayBuffer());
-      return await files.save({name:String(name||'cardcraft-file'),mimeType:blob.type||'application/octet-stream',base64:bytesToBase64(bytes)});
+      return invoke('CardcraftFiles','save',{name:String(name||'cardcraft-file'),mimeType:blob.type||'application/octet-stream',base64:bytesToBase64(bytes)});
     }
   };
 
-  // 기존 웹 export 코드의 blob 다운로드를 Android 저장 플러그인으로 투명하게 연결한다.
+  // 기존 웹 export의 blob 다운로드를 Android Downloads/Cardcraft 저장으로 연결한다.
   const blobUrls=new Map();
   const nativeCreateObjectURL=URL.createObjectURL.bind(URL);
   const nativeRevokeObjectURL=URL.revokeObjectURL.bind(URL);
-  URL.createObjectURL=function(value){
-    const url=nativeCreateObjectURL(value);
-    if(value instanceof Blob)blobUrls.set(url,value);
-    return url;
-  };
+  URL.createObjectURL=function(value){const url=nativeCreateObjectURL(value);if(value instanceof Blob)blobUrls.set(url,value);return url;};
   URL.revokeObjectURL=function(url){blobUrls.delete(url);return nativeRevokeObjectURL(url);};
   const anchorClick=HTMLAnchorElement.prototype.click;
   HTMLAnchorElement.prototype.click=function(){
