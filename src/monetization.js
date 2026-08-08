@@ -1,6 +1,7 @@
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store',...headers}});
 const priceFrom=env=>Math.max(100,Number(env.CARDCRAFT_DOWNLOAD_PRICE)||1900);
-const modeFrom=env=>String(env.CARDCRAFT_MONETIZATION_MODE||'demo').toLowerCase()==='live'&&!!env.PORTONE_API_SECRET?'live':'demo';
+const paymentLiveFrom=env=>String(env.CARDCRAFT_MONETIZATION_MODE||'demo').toLowerCase()==='live'&&!!env.PORTONE_API_SECRET;
+const adLiveFrom=env=>String(env.CARDCRAFT_REWARDED_AD_LIVE||'false').toLowerCase()==='true';
 
 function randomId(prefix='cc'){
   const id=globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -20,8 +21,8 @@ export async function handleMonetizationRequest(request,env,headers={}){
 
   if(pathname==='/api/session'){
     if(request.method!=='GET')return json({error:'METHOD_NOT_ALLOWED'},405,headers);
-    const mode=modeFrom(env);
-    return json({ok:true,mode,price:priceFrom(env),currency:'KRW',paymentLive:mode==='live',adLive:String(env.CARDCRAFT_REWARDED_AD_LIVE||'false').toLowerCase()==='true'},200,headers);
+    const paymentLive=paymentLiveFrom(env),adLive=adLiveFrom(env);
+    return json({ok:true,mode:paymentLive&&adLive?'live':paymentLive||adLive?'mixed':'demo',price:priceFrom(env),currency:'KRW',paymentLive,adLive},200,headers);
   }
 
   if(pathname==='/api/payments/orders'){
@@ -35,8 +36,7 @@ export async function handleMonetizationRequest(request,env,headers={}){
     if(request.method!=='POST')return json({error:'METHOD_NOT_ALLOWED'},405,headers);
     const body=await readJson(request),paymentId=String(body?.paymentId||'').trim();
     if(!paymentId)return json({error:'PAYMENT_ID_REQUIRED'},400,headers);
-    const mode=modeFrom(env);
-    if(mode!=='live')return json({ok:true,granted:true,mode:'demo',paymentId},200,headers);
+    if(!paymentLiveFrom(env))return json({ok:true,granted:true,mode:'demo',paymentId},200,headers);
     try{
       const payment=await verifyPortOne(paymentId,env),paidAmount=Number(payment?.amount?.total??payment?.amount?.paid??0),expected=priceFrom(env);
       if(payment?.status!=='PAID')return json({error:'PAYMENT_NOT_PAID',status:payment?.status||'UNKNOWN'},409,headers);
@@ -50,7 +50,7 @@ export async function handleMonetizationRequest(request,env,headers={}){
 
   if(pathname==='/api/rewards/verify'){
     if(request.method!=='POST')return json({error:'METHOD_NOT_ALLOWED'},405,headers);
-    return json({ok:true,granted:true,verification:'client-reward-event'},200,headers);
+    return json({ok:true,granted:true,verification:'web-client-reward-event'},200,headers);
   }
   return null;
 }
