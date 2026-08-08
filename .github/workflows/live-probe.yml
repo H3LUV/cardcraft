@@ -21,22 +21,32 @@ jobs:
           URL='https://cardcraft.ahrvks.workers.dev/'
           STATUS=''
           BODY=''
+          LIVE='false'
+          VERSION='unknown'
           for i in $(seq 1 20); do
             STATUS=$(curl -L -sS -o /tmp/cardcraft-live.html -w '%{http_code}' --max-time 20 "$URL" || true)
-            BODY=$(head -c 200000 /tmp/cardcraft-live.html 2>/dev/null || true)
-            if [ "$STATUS" = "200" ] && echo "$BODY" | grep -q 'Cardcraft'; then
-              if echo "$BODY" | grep -q 'v12.js'; then
-                echo 'live=true' >> "$GITHUB_OUTPUT"
-                echo 'version=v12' >> "$GITHUB_OUTPUT"
-                break
-              fi
+            BODY=$(head -c 300000 /tmp/cardcraft-live.html 2>/dev/null || true)
+            if [ "$STATUS" = "200" ] && echo "$BODY" | grep -q 'Cardcraft' && echo "$BODY" | grep -q 'v12.js' && echo "$BODY" | grep -q 'v12.css'; then
+              LIVE='true'
+              VERSION='v12'
+              break
             fi
             sleep 20
           done
+          HEALTH_STATUS=$(curl -L -sS -o /tmp/cardcraft-health.json -w '%{http_code}' --max-time 20 "${URL}health" || true)
+          SESSION_STATUS=$(curl -L -sS -o /tmp/cardcraft-session.json -w '%{http_code}' --max-time 20 "${URL}api/session" || true)
+          HEALTH_BODY=$(head -c 2000 /tmp/cardcraft-health.json 2>/dev/null || true)
+          SESSION_BODY=$(head -c 5000 /tmp/cardcraft-session.json 2>/dev/null || true)
+          echo "live=$LIVE" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "status=${STATUS:-000}" >> "$GITHUB_OUTPUT"
+          echo "health_status=${HEALTH_STATUS:-000}" >> "$GITHUB_OUTPUT"
+          echo "session_status=${SESSION_STATUS:-000}" >> "$GITHUB_OUTPUT"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
-          if ! grep -q '^live=' "$GITHUB_OUTPUT"; then echo 'live=false' >> "$GITHUB_OUTPUT"; fi
-          if ! grep -q '^version=' "$GITHUB_OUTPUT"; then echo 'version=unknown' >> "$GITHUB_OUTPUT"; fi
+          echo "health_ok=$([ "$HEALTH_STATUS" = '200' ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "session_ok=$([ "$SESSION_STATUS" = '200' ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          printf '%s' "$HEALTH_BODY" > /tmp/health-body.txt
+          printf '%s' "$SESSION_BODY" > /tmp/session-body.txt
 
       - name: Record probe result
         uses: actions/github-script@v7
@@ -44,15 +54,30 @@ jobs:
           LIVE: ${{ steps.probe.outputs.live }}
           VERSION: ${{ steps.probe.outputs.version }}
           HTTP_STATUS: ${{ steps.probe.outputs.status }}
+          HEALTH_STATUS: ${{ steps.probe.outputs.health_status }}
+          SESSION_STATUS: ${{ steps.probe.outputs.session_status }}
+          HEALTH_OK: ${{ steps.probe.outputs.health_ok }}
+          SESSION_OK: ${{ steps.probe.outputs.session_ok }}
           LIVE_URL: ${{ steps.probe.outputs.url }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            const fs = require('fs');
             const path = '.deploy/live-probe.json';
             const payload = JSON.stringify({
               live: process.env.LIVE === 'true',
               version: process.env.VERSION,
               http_status: process.env.HTTP_STATUS,
+              health: {
+                ok: process.env.HEALTH_OK === 'true',
+                status: process.env.HEALTH_STATUS,
+                body: fs.existsSync('/tmp/health-body.txt') ? fs.readFileSync('/tmp/health-body.txt','utf8').slice(0,1000) : ''
+              },
+              session: {
+                ok: process.env.SESSION_OK === 'true',
+                status: process.env.SESSION_STATUS,
+                body: fs.existsSync('/tmp/session-body.txt') ? fs.readFileSync('/tmp/session-body.txt','utf8').slice(0,2000) : ''
+              },
               url: process.env.LIVE_URL,
               source_sha: context.sha,
               recorded_at: new Date().toISOString()
