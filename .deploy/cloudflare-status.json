@@ -1,8 +1,8 @@
 {
   "status": "failed",
-  "outcome": "failure",
+  "outcome": "skipped",
   "url": "",
-  "source_sha": "2bfb16aa2c7bf813a3e4c8e71d516170b322a326",
+  "source_sha": "694bb79cd6bb01d67607955002912f374d97310f",
   "output_tail": "",
-  "recorded_at": "2026-08-08T09:03:39.414Z"
+  "recorded_at": "2026-08-08T09:06:17.666Z"
 }
