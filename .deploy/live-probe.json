@@ -1,6 +1,7 @@
 {
   "live": true,
-  "version": "v12",
+  "version": "v12.1",
+  "native_runtime": true,
   "http_status": "200",
   "health": {
     "ok": true,
@@ -13,6 +14,6 @@
     "body": "{\"ok\":true,\"mode\":\"mixed\",\"price\":1900,\"currency\":\"KRW\",\"paymentLive\":false,\"adLive\":true,\"products\":{\"png-download\":{\"id\":\"png-download\",\"name\":\"Cardcraft 고해상도 PNG 다운로드\",\"amount\":1900,\"currency\":\"KRW\",\"androidProductId\":\"cardcraft_export_png\"},\"vector-source\":{\"id\":\"vector-source\",\"name\":\"Cardcraft 편집용 벡터 원본 패키지\",\"amount\":3900,\"currency\":\"KRW\",\"androidProductId\":\"cardcraft_export_source\"}}}"
   },
   "url": "https://cardcraft.ahrvks.workers.dev/",
-  "source_sha": "2bfb16aa2c7bf813a3e4c8e71d516170b322a326",
-  "recorded_at": "2026-08-08T09:03:28.245Z"
+  "source_sha": "c8ad9f65d66fbd8f680fd7f03b5e583a8ce27dfc",
+  "recorded_at": "2026-08-08T09:15:57.524Z"
 }
