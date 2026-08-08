@@ -1,0 +1,85 @@
+name: Verify Cardcraft V12.3
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v123-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Cloudflare Git deployment and verify V12.3
+        id: smoke
+        shell: bash
+        run: |
+          BASE='https://cardcraft.ahrvks.workers.dev'
+          OK='false'
+          STATUS='000'
+          CSS_STATUS='000'
+          CFG_STATUS='000'
+          for i in $(seq 1 24); do
+            STATUS=$(curl -L -sS -o /tmp/faces.js -w '%{http_code}' --max-time 20 "$BASE/v12.3-faces.js" || true)
+            CSS_STATUS=$(curl -L -sS -o /tmp/faces.css -w '%{http_code}' --max-time 20 "$BASE/v12.3-faces.css" || true)
+            CFG_STATUS=$(curl -L -sS -o /tmp/config.js -w '%{http_code}' --max-time 20 "$BASE/monetization-config.js" || true)
+            if [ "$STATUS" = '200' ] && [ "$CSS_STATUS" = '200' ] && [ "$CFG_STATUS" = '200' ] && grep -q 'cardcraftV123Faces' /tmp/faces.js && grep -q 'v12.3-faces.js' /tmp/config.js; then
+              OK='true'
+              break
+            fi
+            sleep 15
+          done
+          HEALTH_STATUS=$(curl -L -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "$BASE/health" || true)
+          SESSION_STATUS=$(curl -L -sS -o /tmp/session.json -w '%{http_code}' --max-time 20 "$BASE/api/session" || true)
+          echo "ok=$OK" >> "$GITHUB_OUTPUT"
+          echo "asset_status=$STATUS" >> "$GITHUB_OUTPUT"
+          echo "css_status=$CSS_STATUS" >> "$GITHUB_OUTPUT"
+          echo "config_status=$CFG_STATUS" >> "$GITHUB_OUTPUT"
+          echo "health_status=$HEALTH_STATUS" >> "$GITHUB_OUTPUT"
+          echo "session_status=$SESSION_STATUS" >> "$GITHUB_OUTPUT"
+
+      - name: Record V12.3 deployment result
+        uses: actions/github-script@v7
+        env:
+          OK: ${{ steps.smoke.outputs.ok }}
+          ASSET_STATUS: ${{ steps.smoke.outputs.asset_status }}
+          CSS_STATUS: ${{ steps.smoke.outputs.css_status }}
+          CONFIG_STATUS: ${{ steps.smoke.outputs.config_status }}
+          HEALTH_STATUS: ${{ steps.smoke.outputs.health_status }}
+          SESSION_STATUS: ${{ steps.smoke.outputs.session_status }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const path = '.deploy/v123-smoke.json';
+            const payload = JSON.stringify({
+              ok: process.env.OK === 'true',
+              version: '12.3',
+              url: 'https://cardcraft.ahrvks.workers.dev/',
+              asset_status: process.env.ASSET_STATUS,
+              css_status: process.env.CSS_STATUS,
+              config_status: process.env.CONFIG_STATUS,
+              health_status: process.env.HEALTH_STATUS,
+              session_status: process.env.SESSION_STATUS,
+              features: ['optional-back-inputs','back-font-at-input','independent-back-style','front-style-link-default','back-template-library'],
+              source_sha: context.sha,
+              recorded_at: new Date().toISOString()
+            }, null, 2) + '\n';
+            let sha;
+            try {
+              const current = await github.rest.repos.getContent({ owner: context.repo.owner, repo: context.repo.repo, path });
+              sha = current.data.sha;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path,
+              message: 'chore: record V12.3 smoke [skip ci]',
+              content: Buffer.from(payload).toString('base64'),
+              sha
+            });
