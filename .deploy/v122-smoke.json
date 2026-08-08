@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "version": "12.2",
+  "url": "https://cardcraft.ahrvks.workers.dev/",
+  "asset_status": "200",
+  "health_status": "200",
+  "session_status": "200",
+  "features": [
+    "department-field",
+    "inline-font-selection",
+    "back-text-opt-in",
+    "logo-scale-fix"
+  ],
+  "source_sha": "4caa2f44c96c581706c806e0c42cb4493b0c76f8",
+  "recorded_at": "2026-08-08T09:48:56.395Z"
+}
