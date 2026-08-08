@@ -1,14 +1,21 @@
 {
-  "name": "cardcraft-v12-gemini",
-  "version": "12.0.0",
+  "name": "cardcraft-v12-android",
+  "version": "12.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check src/index.js && node --check src/main.js && node --check src/monetization.js && node --check public/monetization.js && node --check public/v11.js && node --check public/v11-commerce-patch.js && node --check public/v12.js",
+    "check": "node --check src/index.js && node --check src/main.js && node --check src/monetization.js && node --check public/monetization.js && node --check public/v11.js && node --check public/v11-commerce-patch.js && node --check public/v12.js && node --check public/native-app-bridge.js",
     "dev": "wrangler dev",
-    "deploy": "npm run check && wrangler deploy"
+    "deploy": "npm run check && wrangler deploy",
+    "android:add": "cap add android",
+    "android:sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.4.2",
+    "@capacitor/core": "8.4.2"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.4.2",
     "wrangler": "^4.68.0"
   }
 }
