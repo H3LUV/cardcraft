@@ -60,7 +60,7 @@ window.CARDCRAFT_MONETIZATION = {
     script.onload = () => {
       if (!document.querySelector('script[data-cardcraft-v11-commerce]')) {
         const patch = document.createElement('script');
-        patch.src = './v11-commerce-patch.js?v=11.0';
+        patch.src = './v11-commerce-patch.js?v=12.0';
         patch.dataset.cardcraftV11Commerce = '1';
         document.body.appendChild(patch);
       }
