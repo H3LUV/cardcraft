@@ -1,0 +1,77 @@
+name: Verify Cardcraft V12.2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/v122-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Cloudflare Git deployment and verify V12.2
+        id: smoke
+        shell: bash
+        run: |
+          BASE='https://cardcraft.ahrvks.workers.dev'
+          OK='false'
+          STATUS='000'
+          for i in $(seq 1 24); do
+            STATUS=$(curl -L -sS -o /tmp/fixes.js -w '%{http_code}' --max-time 20 "$BASE/v12.2-fixes.js" || true)
+            CSS_STATUS=$(curl -L -sS -o /tmp/fixes.css -w '%{http_code}' --max-time 20 "$BASE/v12.2-fixes.css" || true)
+            CFG_STATUS=$(curl -L -sS -o /tmp/config.js -w '%{http_code}' --max-time 20 "$BASE/monetization-config.js" || true)
+            if [ "$STATUS" = '200' ] && [ "$CSS_STATUS" = '200' ] && [ "$CFG_STATUS" = '200' ] && grep -q 'cardcraftV122ProductionFixes' /tmp/fixes.js && grep -q 'v12.2-fixes.js' /tmp/config.js; then
+              OK='true'
+              break
+            fi
+            sleep 15
+          done
+          HEALTH_STATUS=$(curl -L -sS -o /tmp/health.json -w '%{http_code}' --max-time 20 "$BASE/health" || true)
+          SESSION_STATUS=$(curl -L -sS -o /tmp/session.json -w '%{http_code}' --max-time 20 "$BASE/api/session" || true)
+          echo "ok=$OK" >> "$GITHUB_OUTPUT"
+          echo "asset_status=$STATUS" >> "$GITHUB_OUTPUT"
+          echo "health_status=$HEALTH_STATUS" >> "$GITHUB_OUTPUT"
+          echo "session_status=$SESSION_STATUS" >> "$GITHUB_OUTPUT"
+
+      - name: Record V12.2 deployment result
+        uses: actions/github-script@v7
+        env:
+          OK: ${{ steps.smoke.outputs.ok }}
+          ASSET_STATUS: ${{ steps.smoke.outputs.asset_status }}
+          HEALTH_STATUS: ${{ steps.smoke.outputs.health_status }}
+          SESSION_STATUS: ${{ steps.smoke.outputs.session_status }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const path = '.deploy/v122-smoke.json';
+            const payload = JSON.stringify({
+              ok: process.env.OK === 'true',
+              version: '12.2',
+              url: 'https://cardcraft.ahrvks.workers.dev/',
+              asset_status: process.env.ASSET_STATUS,
+              health_status: process.env.HEALTH_STATUS,
+              session_status: process.env.SESSION_STATUS,
+              features: ['department-field','inline-font-selection','back-text-opt-in','logo-scale-fix'],
+              source_sha: context.sha,
+              recorded_at: new Date().toISOString()
+            }, null, 2) + '\n';
+            let sha;
+            try {
+              const current = await github.rest.repos.getContent({ owner: context.repo.owner, repo: context.repo.repo, path });
+              sha = current.data.sha;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path,
+              message: 'chore: record V12.2 smoke [skip ci]',
+              content: Buffer.from(payload).toString('base64'),
+              sha
+            });
