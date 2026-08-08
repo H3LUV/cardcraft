@@ -4,17 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#101828" />
-  <meta name="description" content="AI 브랜드 분석, 가로·세로 명함, 듀얼 로고와 항목별 폰트를 지원하는 명함 디자인 도구" />
-  <title>Cardcraft — 명함 시안 자동 생성기</title>
+  <meta name="description" content="AI 브랜드 분석, 1,000개 명함 디자인, 인쇄 규격과 편집용 벡터 원본을 지원하는 Cardcraft" />
+  <title>Cardcraft — AI 명함 디자인 스튜디오</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=10.0" />
-  <link rel="stylesheet" href="./v5-editor.css?v=10.0" />
-  <link rel="stylesheet" href="./v6.css?v=10.0" />
-  <link rel="stylesheet" href="./v7.css?v=10.0" />
-  <link rel="stylesheet" href="./v8.css?v=10.0" />
-  <link rel="stylesheet" href="./v9.css?v=10.0" />
-  <link rel="stylesheet" href="./v10.css?v=10.0" />
+  <link rel="stylesheet" href="./styles.css?v=11.0" />
+  <link rel="stylesheet" href="./v5-editor.css?v=11.0" />
+  <link rel="stylesheet" href="./v6.css?v=11.0" />
+  <link rel="stylesheet" href="./v7.css?v=11.0" />
+  <link rel="stylesheet" href="./v8.css?v=11.0" />
+  <link rel="stylesheet" href="./v9.css?v=11.0" />
+  <link rel="stylesheet" href="./v10.css?v=11.0" />
+  <link rel="stylesheet" href="./v11.css?v=11.0" />
   <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
 </head>
 <body>
@@ -28,7 +29,7 @@
         <div class="autosave"><span class="status-dot"></span> 자동 저장됨</div>
         <button class="btn ghost" id="resetBtn">↶ 초기화</button>
         <button class="btn secondary" id="saveBtn">▣ 프로젝트 저장</button>
-        <button class="btn primary" id="exportBtn">↓ PNG 내보내기</button>
+        <button class="btn primary" id="exportBtn">↓ 파일 내보내기</button>
       </div>
     </header>
 
@@ -40,7 +41,7 @@
           <p>디자인 툴을 배우지 않아도 됩니다. 브랜드 정보를 넣고 서로 다른 완성형 시안을 바로 비교하세요.</p>
         </div>
         <div class="hero-stat">
-          <span>100 TEMPLATE LIBRARY · PROJECT READINESS</span><strong id="completionText">84%</strong>
+          <span>1,000 TEMPLATE LIBRARY · PRINT READY</span><strong id="completionText">84%</strong>
           <div class="progress"><i id="completionBar" style="width:84%"></i></div>
         </div>
       </section>
@@ -110,10 +111,10 @@
 
       <section class="variants-section">
         <div class="variants-heading">
-          <div><span class="section-label">03 · GENERATED CONCEPTS</span><h2 id="variantHeading">100개 디자인 중 추천 시안 5개</h2><p>20개 레이아웃 구조와 5개 아트디렉션으로 만든 100개 디자인 풀에서 5개씩 추천합니다.</p></div>
+          <div><span class="section-label">03 · GENERATED CONCEPTS</span><h2 id="variantHeading">1,000개 디자인 중 추천 시안 5개</h2><p>100개 구조 베이스와 10개 아트디렉션으로 구성한 1,000개 디자인 풀에서 5개씩 추천합니다.</p></div>
           <div class="variant-actions">
-            <button class="btn secondary" id="libraryBtn">▦ 전체 100개 보기</button>
-            <button class="btn secondary" id="regenerateBtn">↻ 100개에서 다시 추천</button>
+            <button class="btn secondary" id="libraryBtn">▦ 전체 1,000개 보기</button>
+            <button class="btn secondary" id="regenerateBtn">↻ 1,000개에서 다시 추천</button>
           </div>
         </div>
         <div class="variant-grid" id="variantGrid"></div>
@@ -123,7 +124,7 @@
       <button class="template-backdrop" type="button" data-template-close aria-label="시안 목록 닫기"></button>
       <section class="template-dialog" role="dialog" aria-modal="true" aria-labelledby="templateModalTitle">
         <header class="template-dialog-header">
-          <div><span class="section-label">100 TEMPLATE LIBRARY</span><h2 id="templateModalTitle">전체 명함 디자인</h2><p>추천 5개 외에 전체 100개 시안을 직접 보고 선택할 수 있습니다.</p></div>
+          <div><span class="section-label">1,000 TEMPLATE LIBRARY</span><h2 id="templateModalTitle">전체 명함 디자인</h2><p>추천 5개 외에 1,000개 시안을 카테고리별로 나눠 직접 선택할 수 있습니다.</p></div>
           <button class="template-close" type="button" data-template-close aria-label="닫기">×</button>
         </header>
         <nav class="template-tabs" id="templateTabs"></nav>
@@ -131,16 +132,17 @@
       </section>
     </div>
     <div class="toast" id="toast" hidden>✓ <span></span></div>
-    <footer><span>CARDCRAFT V10 · AI DESIGN COPILOT · BRAND DESIGN ENGINE</span><span>90 × 50mm · 3mm BLEED · LOCAL AUTOSAVE</span></footer>
+    <footer><span>CARDCRAFT V11 · 1,000 DESIGNS · EDITABLE VECTOR EXPORT</span><span>90×50 / 86×54 / 90×45 · 3mm BLEED · LOCAL AUTOSAVE</span></footer>
   </div>
-  <script src="./app.js?v=10.0"></script>
-  <script src="./v5-editor.js?v=10.0"></script>
-  <script src="./monetization-config.js?v=10.0"></script>
-  <script src="./v6.js?v=10.0"></script>
-  <script src="./v7.js?v=10.0"></script>
-  <script src="./v8.js?v=10.0"></script>
-  <script src="./v9.js?v=10.0"></script>
-  <script src="./ai-config.js?v=10.0"></script>
-  <script src="./v10.js?v=10.0"></script>
+  <script src="./app.js?v=11.0"></script>
+  <script src="./v5-editor.js?v=11.0"></script>
+  <script src="./monetization-config.js?v=11.0"></script>
+  <script src="./v6.js?v=11.0"></script>
+  <script src="./v7.js?v=11.0"></script>
+  <script src="./v8.js?v=11.0"></script>
+  <script src="./v9.js?v=11.0"></script>
+  <script src="./ai-config.js?v=11.0"></script>
+  <script src="./v10.js?v=11.0"></script>
+  <script src="./v11.js?v=11.0"></script>
 </body>
 </html>
