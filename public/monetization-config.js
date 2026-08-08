@@ -1,5 +1,5 @@
 window.CARDCRAFT_MONETIZATION = {
-  mode: 'demo', // 'demo' | 'live'
+  mode: 'demo', // payment mode only; rewarded ads can run live independently
   premiumPrice: 1900,
   currency: 'KRW',
   paymentProvider: 'portone-v2',
@@ -14,16 +14,17 @@ window.CARDCRAFT_MONETIZATION = {
   },
 
   // 포트원 Store ID와 Channel Key는 브라우저에 노출 가능한 식별자입니다.
-  // 실제 값을 입력하기 전에는 demo 모드로 두세요. API Secret은 절대 이 파일에 넣지 않습니다.
+  // 실제 값을 입력하기 전에는 결제만 demo 모드로 유지합니다. API Secret은 절대 이 파일에 넣지 않습니다.
   portOne: {
     storeId: '',
     channelKey: ''
   },
 
   // Google Ad Manager 웹 보상형 광고 지면 경로.
-  // 광고 완료 후 AI 디자인 생성이 시작됩니다.
+  // 현재는 Google 공식 rewarded web 테스트 지면입니다.
+  // 수익형 전환 시 이 값만 우리 Ad Manager의 /<network-code>/<ad-unit> 경로로 교체합니다.
   rewardedAd: {
-    adUnitPath: ''
+    adUnitPath: '/22639388115/rewarded_web_example'
   },
 
   adminLoginUrl: '/admin/login',
@@ -35,13 +36,13 @@ window.CARDCRAFT_MONETIZATION = {
   if (!document.querySelector('link[data-cardcraft-monetization]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = './monetization.css?v=10.2';
+    link.href = './monetization.css?v=10.3';
     link.dataset.cardcraftMonetization = '1';
     document.head.appendChild(link);
   }
   if (!document.querySelector('script[data-cardcraft-monetization]')) {
     const script = document.createElement('script');
-    script.src = './monetization.js?v=10.2';
+    script.src = './monetization.js?v=10.3';
     script.defer = true;
     script.dataset.cardcraftMonetization = '1';
     document.head.appendChild(script);
