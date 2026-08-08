@@ -10,6 +10,8 @@ on:
       - '.github/workflows/deploy-heartbeat.yml'
       - '.github/workflows/cloudflare-deploy.yml'
       - '.github/workflows/live-probe.yml'
+      - '.github/workflows/final-smoke.yml'
+      - '.github/workflows/native-runtime-finalize.yml'
   workflow_dispatch:
 
 permissions:
@@ -17,8 +19,8 @@ permissions:
   actions: read
 
 concurrency:
-  group: cardcraft-android-build
-  cancel-in-progress: true
+  group: cardcraft-android-build-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   build:
