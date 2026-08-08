@@ -1,12 +1,12 @@
 {
   "name": "cardcraft-v10-gemini",
-  "version": "10.2.0",
+  "version": "10.3.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check src/index.js",
+    "check": "node --check src/index.js && node --check src/main.js && node --check src/monetization.js && node --check public/monetization.js",
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "npm run check && wrangler deploy"
   },
   "devDependencies": {
     "wrangler": "^4.68.0"
