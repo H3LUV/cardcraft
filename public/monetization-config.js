@@ -2,7 +2,6 @@ window.CARDCRAFT_MONETIZATION = {
   mode: 'demo', // 'demo' | 'live'
   premiumPrice: 1900,
   currency: 'KRW',
-  paidUnlockHours: 24,
   paymentProvider: 'portone-v2',
   rewardedAdProvider: 'google-ad-manager',
 
@@ -22,30 +21,27 @@ window.CARDCRAFT_MONETIZATION = {
   },
 
   // Google Ad Manager 웹 보상형 광고 지면 경로.
-  // 예: /1234567/cardcraft_rewarded
+  // 광고 완료 후 AI 디자인 생성이 시작됩니다.
   rewardedAd: {
     adUnitPath: ''
   },
 
-  // 운영 관리자 로그인 주소. Cloudflare Access로 보호된 경로를 연결합니다.
   adminLoginUrl: '/admin/login',
-
-  // 데모 ZIP에서만 사용하는 관리자 테스트 코드입니다. live 모드에서는 완전히 무시됩니다.
   demoAdminCode: 'CARDCRAFT-DEMO'
 };
 
-// 수익화 UI는 기존 Cardcraft 본체와 분리해 로드합니다.
+// 광고는 디자인 생성, 결제는 최종 PNG 다운로드에만 적용합니다.
 (() => {
   if (!document.querySelector('link[data-cardcraft-monetization]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = './monetization.css?v=10.1';
+    link.href = './monetization.css?v=10.2';
     link.dataset.cardcraftMonetization = '1';
     document.head.appendChild(link);
   }
   if (!document.querySelector('script[data-cardcraft-monetization]')) {
     const script = document.createElement('script');
-    script.src = './monetization.js?v=10.1';
+    script.src = './monetization.js?v=10.2';
     script.defer = true;
     script.dataset.cardcraftMonetization = '1';
     document.head.appendChild(script);
