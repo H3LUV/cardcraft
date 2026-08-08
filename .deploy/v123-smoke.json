@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "version": "12.3",
+  "url": "https://cardcraft.ahrvks.workers.dev/",
+  "asset_status": "200",
+  "css_status": "200",
+  "config_status": "200",
+  "health_status": "200",
+  "session_status": "200",
+  "features": [
+    "optional-back-inputs",
+    "back-font-at-input",
+    "independent-back-style",
+    "front-style-link-default",
+    "back-template-library"
+  ],
+  "source_sha": "359cd94669d70771fe30f0bb69acb1648d2e4af9",
+  "recorded_at": "2026-08-08T10:13:28.397Z"
+}
