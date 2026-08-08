@@ -45,19 +45,19 @@ window.CARDCRAFT_MONETIZATION = {
   if (!document.querySelector('link[data-cardcraft-monetization]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = './monetization.css?v=12.3';
+    link.href = './monetization.css?v=12.4';
     link.dataset.cardcraftMonetization = '1';
     document.head.appendChild(link);
   }
   if (!document.querySelector('script[data-cardcraft-monetization]')) {
     const script = document.createElement('script');
-    script.src = './monetization.js?v=12.3';
+    script.src = './monetization.js?v=12.4';
     script.defer = true;
     script.dataset.cardcraftMonetization = '1';
     script.onload = () => {
       if (!document.querySelector('script[data-cardcraft-v11-commerce]')) {
         const patch = document.createElement('script');
-        patch.src = './v11-commerce-patch.js?v=12.3';
+        patch.src = './v11-commerce-patch.js?v=12.4';
         patch.dataset.cardcraftV11Commerce = '1';
         document.body.appendChild(patch);
       }
@@ -68,13 +68,13 @@ window.CARDCRAFT_MONETIZATION = {
   if (!document.querySelector('link[data-cardcraft-v122-fixes]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = './v12.2-fixes.css?v=12.3';
+    link.href = './v12.2-fixes.css?v=12.4';
     link.dataset.cardcraftV122Fixes = '1';
     document.head.appendChild(link);
   }
   if (!document.querySelector('script[data-cardcraft-v122-fixes]')) {
     const fixes = document.createElement('script');
-    fixes.src = './v12.2-fixes.js?v=12.3';
+    fixes.src = './v12.2-fixes.js?v=12.4';
     fixes.async = false;
     fixes.dataset.cardcraftV122Fixes = '1';
     document.head.appendChild(fixes);
@@ -83,15 +83,30 @@ window.CARDCRAFT_MONETIZATION = {
   if (!document.querySelector('link[data-cardcraft-v123-faces]')) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = './v12.3-faces.css?v=12.3';
+    link.href = './v12.3-faces.css?v=12.4';
     link.dataset.cardcraftV123Faces = '1';
     document.head.appendChild(link);
   }
   if (!document.querySelector('script[data-cardcraft-v123-faces]')) {
     const faces = document.createElement('script');
-    faces.src = './v12.3-faces.js?v=12.3';
+    faces.src = './v12.3-faces.js?v=12.4';
     faces.async = false;
     faces.dataset.cardcraftV123Faces = '1';
     document.head.appendChild(faces);
+  }
+
+  if (!document.querySelector('link[data-cardcraft-v124-parity]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './v12.4-style-parity.css?v=12.4';
+    link.dataset.cardcraftV124Parity = '1';
+    document.head.appendChild(link);
+  }
+  if (!document.querySelector('script[data-cardcraft-v124-parity]')) {
+    const parity = document.createElement('script');
+    parity.src = './v12.4-style-parity.js?v=12.4';
+    parity.async = false;
+    parity.dataset.cardcraftV124Parity = '1';
+    document.head.appendChild(parity);
   }
 })();
