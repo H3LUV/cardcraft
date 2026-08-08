@@ -16,6 +16,10 @@ permissions:
   contents: write
   actions: read
 
+concurrency:
+  group: cardcraft-android-build
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -92,7 +96,7 @@ jobs:
             const apkExists = fs.existsSync('android/app/build/outputs/apk/debug/app-debug.apk');
             const payload = JSON.stringify({
               status: process.env.BUILD_OUTCOME === 'success' && apkExists ? 'success' : 'failed',
-              outcome: process.env.BUILD_OUTCOME || 'unknown',
+              outcome: process.env.BUILD_OUTCOME || 'not-run',
               run_id: String(context.runId),
               artifact: apkExists ? 'cardcraft-android-debug' : '',
               package_id: 'com.h3works.cardcraft',
