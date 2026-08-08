@@ -1,0 +1,11 @@
+{
+  "ready": false,
+  "action": "",
+  "html_url": "",
+  "error": {
+    "status": 403,
+    "message": "Resource not accessible by integration"
+  },
+  "source_sha": "9cceb8e33da46b9d3a9b5a54fe32dd8c8242d3f2",
+  "recorded_at": "2026-08-08T08:46:16.204Z"
+}
