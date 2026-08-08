@@ -1,0 +1,13 @@
+{
+  "appId": "com.h3works.cardcraft",
+  "appName": "Cardcraft",
+  "webDir": "public",
+  "server": {
+    "url": "https://cardcraft.ahrvks.workers.dev/",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#101828"
+  }
+}
