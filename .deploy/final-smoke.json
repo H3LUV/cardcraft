@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "detail": "production-ready",
+  "url": "https://cardcraft.ahrvks.workers.dev/",
+  "index_status": "200",
+  "health_status": "200",
+  "session_status": "200",
+  "health_body": "{\"ok\":true,\"service\":\"cardcraft\",\"mode\":\"live\",\"provider\":\"gemini\",\"model\":\"gemini-3.5-flash-lite\"}",
+  "session_body": "{\"ok\":true,\"mode\":\"mixed\",\"price\":1900,\"currency\":\"KRW\",\"paymentLive\":false,\"adLive\":true,\"products\":{\"png-download\":{\"id\":\"png-download\",\"name\":\"Cardcraft 고해상도 PNG 다운로드\",\"amount\":1900,\"currency\":\"KRW\",\"androidProductId\":\"cardcraft_export_png\"},\"vector-source\":{\"id\":\"vector-source\",\"name\":\"Cardcraft 편집용 벡터 원본 패키지\",\"amount\":3900,\"currency\":\"KRW\",\"androidProductId\":\"cardcraft_export_source\"}}}",
+  "source_sha": "1a7162f1f88c1ec974fe92885a0bbc3857bb8882",
+  "recorded_at": "2026-08-08T09:19:32.181Z"
+}
