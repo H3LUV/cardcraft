@@ -1,0 +1,74 @@
+name: Probe Cardcraft Live
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/live-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Cloudflare Worker URL
+        id: probe
+        shell: bash
+        run: |
+          URL='https://cardcraft.ahrvks.workers.dev/'
+          STATUS=''
+          BODY=''
+          for i in $(seq 1 20); do
+            STATUS=$(curl -L -sS -o /tmp/cardcraft-live.html -w '%{http_code}' --max-time 20 "$URL" || true)
+            BODY=$(head -c 200000 /tmp/cardcraft-live.html 2>/dev/null || true)
+            if [ "$STATUS" = "200" ] && echo "$BODY" | grep -q 'Cardcraft'; then
+              if echo "$BODY" | grep -q 'v12.js'; then
+                echo 'live=true' >> "$GITHUB_OUTPUT"
+                echo 'version=v12' >> "$GITHUB_OUTPUT"
+                break
+              fi
+            fi
+            sleep 20
+          done
+          echo "status=${STATUS:-000}" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          if ! grep -q '^live=' "$GITHUB_OUTPUT"; then echo 'live=false' >> "$GITHUB_OUTPUT"; fi
+          if ! grep -q '^version=' "$GITHUB_OUTPUT"; then echo 'version=unknown' >> "$GITHUB_OUTPUT"; fi
+
+      - name: Record probe result
+        uses: actions/github-script@v7
+        env:
+          LIVE: ${{ steps.probe.outputs.live }}
+          VERSION: ${{ steps.probe.outputs.version }}
+          HTTP_STATUS: ${{ steps.probe.outputs.status }}
+          LIVE_URL: ${{ steps.probe.outputs.url }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const path = '.deploy/live-probe.json';
+            const payload = JSON.stringify({
+              live: process.env.LIVE === 'true',
+              version: process.env.VERSION,
+              http_status: process.env.HTTP_STATUS,
+              url: process.env.LIVE_URL,
+              source_sha: context.sha,
+              recorded_at: new Date().toISOString()
+            }, null, 2) + '\n';
+            let sha;
+            try {
+              const current = await github.rest.repos.getContent({ owner: context.repo.owner, repo: context.repo.repo, path });
+              sha = current.data.sha;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path,
+              message: 'chore: record Cardcraft live probe [skip ci]',
+              content: Buffer.from(payload).toString('base64'),
+              sha
+            });
