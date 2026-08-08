@@ -1,0 +1,70 @@
+name: Patch Cardcraft Native Web Bridge
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/native-web-patch.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Patch web runtime for native Android
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p=Path('public/index.html')
+          s=p.read_text()
+          old='  <script src="./app.js?v=12.0"></script>\n  <script src="./v5-editor.js?v=12.0"></script>\n  <script src="./monetization-config.js?v=12.0"></script>'
+          new='  <script src="./app.js?v=12.1"></script>\n  <script src="./v5-editor.js?v=12.1"></script>\n  <script src="./native-app-bridge.js?v=12.1"></script>\n  <script src="./monetization-config.js?v=12.1"></script>'
+          if old not in s: raise SystemExit('index insertion point not found')
+          s=s.replace(old,new,1).replace('?v=12.0','?v=12.1')
+          p.write_text(s)
+
+          p=Path('public/monetization.js')
+          s=p.read_text()
+          old="  const adConfigured=()=>Boolean(session.adLive&&cfg.rewardedAd?.adUnitPath);\n  const paymentConfigured=()=>Boolean(session.paymentLive&&cfg.portOne?.storeId&&cfg.portOne?.channelKey);"
+          new="  const adConfigured=()=>Boolean(session.adLive&&cfg.rewardedAd?.adUnitPath);\n  const paymentConfigured=()=>Boolean(session.paymentLive&&cfg.portOne?.storeId&&cfg.portOne?.channelKey);\n  const nativeAdsConfigured=()=>Boolean(window.CardcraftNativeAds?.available?.());\n  const nativeBillingConfigured=()=>Boolean(window.CardcraftNativeBilling?.available?.());"
+          if old not in s: raise SystemExit('monetization config point not found')
+          s=s.replace(old,new,1)
+          s=s.replace("    const live=mode==='design'?adConfigured():paymentConfigured();","    const live=mode==='design'?(nativeAdsConfigured()||adConfigured()):(nativeBillingConfigured()||paymentConfigured());",1)
+          anchor="  function demoAd(){busy=true;choiceGrid.hidden=true;progress.classList.remove('is-active');adStage.classList.add('is-active');let left=5;"
+          insert="""  async function nativeRewardedAd(){\n    busy=true;showProgress('광고를 준비하고 있습니다','보상형 광고를 불러오는 중입니다.');\n    try{const result=await window.CardcraftNativeAds.showRewarded();if(!result?.granted)throw new Error('AD_NOT_GRANTED');busy=false;triggerDesignGeneration();}\n    catch(e){console.error(e);showError(/closed|cancel|not_granted/i.test(String(e?.message||''))?'광고를 끝까지 시청해야 디자인을 생성할 수 있습니다.':'광고를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');}\n  }\n  async function nativePngPayment(){\n    busy=true;showProgress('결제를 준비하고 있습니다','Google Play 결제창을 여는 중입니다.');\n    try{const result=await window.CardcraftNativeBilling.purchase('cardcraft_export_png');if(!(result?.granted||result?.purchased))throw new Error('PURCHASE_NOT_GRANTED');busy=false;await runExport();}\n    catch(e){console.error(e);showError(/cancel|user_canceled/i.test(String(e?.message||''))?'결제가 취소되었습니다.':'결제를 완료하지 못했습니다.');}\n  }\n\n"""
+          if anchor not in s: raise SystemExit('monetization insert point not found')
+          s=s.replace(anchor,insert+anchor,1)
+          old="  async function handlePrimary(){if(busy)return;if(gateMode==='design')return adConfigured()?liveRewardedAd():demoAd();return paymentConfigured()?livePayment():demoPayment();}"
+          new="  async function handlePrimary(){if(busy)return;if(gateMode==='design'){if(nativeAdsConfigured())return nativeRewardedAd();return adConfigured()?liveRewardedAd():demoAd();}if(nativeBillingConfigured())return nativePngPayment();return paymentConfigured()?livePayment():demoPayment();}"
+          if old not in s: raise SystemExit('handlePrimary not found')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+
+          p=Path('public/v11.js')
+          s=p.read_text()
+          old="  function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1600);}"
+          new="  async function downloadBlob(blob,name){if(window.CardcraftNativeFiles?.available?.()){try{await window.CardcraftNativeFiles.saveBlob(blob,name);showToast?.(`${name} 파일을 저장했습니다.`,3500);return;}catch(error){console.error('Native file save failed',error);}}const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1600);}"
+          if old not in s: raise SystemExit('v11 downloadBlob not found')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+      - run: npm install --no-audit --no-fund
+      - run: npm run check
+      - name: Commit native bridge integration
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/index.html public/monetization.js public/v11.js
+          git diff --cached --quiet && exit 0
+          git commit -m 'Integrate native AdMob Play Billing and Android file saves'
+          git push
