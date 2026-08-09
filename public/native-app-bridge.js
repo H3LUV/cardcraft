@@ -12,7 +12,10 @@
   };
 
   window.CardcraftNativeAds={
+    mode:'google-test',
     available:()=>typeof cap?.nativePromise==='function',
+    prepareRewarded:()=>invoke('CardcraftAds','prepareRewarded',{}),
+    status:()=>invoke('CardcraftAds','adStatus',{}),
     showRewarded:()=>invoke('CardcraftAds','showRewarded',{})
   };
 
@@ -34,6 +37,17 @@
       return invoke('CardcraftFiles','save',{name:String(name||'cardcraft-file'),mimeType:blob.type||'application/octet-stream',base64:bytesToBase64(bytes)});
     }
   };
+
+  // 앱이 열린 직후 테스트 Rewarded를 미리 준비한다. 실패해도 앱 자체는 계속 동작한다.
+  setTimeout(()=>{
+    window.CardcraftNativeAds.prepareRewarded().then(result=>{
+      window.CARDCRAFT_NATIVE_AD_STATUS={ok:true,...result};
+      console.info('Cardcraft rewarded test ad ready',result);
+    }).catch(error=>{
+      window.CARDCRAFT_NATIVE_AD_STATUS={ok:false,error:String(error?.message||error)};
+      console.warn('Cardcraft rewarded test ad warmup failed',error);
+    });
+  },700);
 
   // 기존 웹 export의 blob 다운로드를 Android Downloads/Cardcraft 저장으로 연결한다.
   const blobUrls=new Map();
