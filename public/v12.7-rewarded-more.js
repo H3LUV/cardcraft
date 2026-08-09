@@ -2,18 +2,29 @@
   'use strict';
 
   function boot(){
-    const rewardBtn=document.getElementById('ccRewardedMoreBtn');
+    const actions=document.querySelector('.variant-actions');
     const legacy=document.getElementById('regenerateBtn')||document.getElementById('ccLegacyRegenerate');
-    if(!rewardBtn||!legacy){setTimeout(boot,80);return;}
+    if(!actions||!legacy){setTimeout(boot,80);return;}
     if(window.__CARDCRAFT_V127_REWARDED_MORE__)return;
     window.__CARDCRAFT_V127_REWARDED_MORE__=true;
 
-    // 기존 추천 버튼은 app.js의 직접 click listener를 그대로 보존하되 UI에서는 완전히 분리한다.
+    // 기존 추천 버튼은 app.js의 직접 click listener만 남기고 사용자 UI에서는 감춘다.
     legacy.id='ccLegacyRegenerate';
     legacy.hidden=true;
     legacy.style.display='none';
 
-    // AI 버튼은 기존 direct listener를 유지하면서 monetization.js의 #v10AiRun 캡처 대상에서 제외한다.
+    // 광고 CTA는 별도 DOM으로 직접 만든다. 다른 버전의 UI 동기화 코드가 이 버튼을 덮어쓸 수 없다.
+    let rewardBtn=document.getElementById('ccRewardedMoreBtn');
+    if(!rewardBtn){
+      rewardBtn=document.createElement('button');
+      rewardBtn.type='button';
+      rewardBtn.id='ccRewardedMoreBtn';
+      rewardBtn.className='btn primary cc-rewarded-more-btn';
+      rewardBtn.style.cssText='min-height:44px;padding:0 18px;font-weight:800;white-space:normal;line-height:1.25;box-shadow:0 6px 18px rgba(37,99,235,.18)';
+      actions.appendChild(rewardBtn);
+    }
+
+    // AI 버튼은 원래 direct listener를 그대로 유지하면서 monetization.js의 #v10AiRun 광고 캡처 대상에서는 제외한다.
     const aiBtn=document.getElementById('v10AiRun');
     if(aiBtn){
       aiBtn.id='v10AiRunFree';
@@ -22,12 +33,19 @@
     const aiNote=document.querySelector('.v10-ai-note');
     if(aiNote)aiNote.textContent='AI 디자인 생성은 광고 없이 사용할 수 있습니다. 추가 추천 시안을 볼 때만 보상형 광고가 표시됩니다.';
 
-    let busy=false;
-
-    function sideLabel(){
-      return (typeof state!=='undefined'&&state.side==='back')?'뒷면':'앞면';
+    // 설치된 APK가 수정본인지 화면에서 바로 확인할 수 있게 버전을 표시한다.
+    let versionBadge=document.getElementById('ccV127VersionBadge');
+    if(!versionBadge){
+      versionBadge=document.createElement('span');
+      versionBadge.id='ccV127VersionBadge';
+      versionBadge.textContent='V12.7 TEST';
+      versionBadge.style.cssText='display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;background:#101828;color:#fff;font-size:9px;font-weight:800;letter-spacing:.05em;margin-left:8px';
+      document.querySelector('.variants-heading .section-label')?.appendChild(versionBadge);
     }
 
+    let busy=false;
+
+    function sideLabel(){return (typeof state!=='undefined'&&state.side==='back')?'뒷면':'앞면';}
     function syncLabel(){
       if(busy)return;
       rewardBtn.textContent=`▶ 광고 보고 다른 ${sideLabel()} 시안 5개 보기`;
@@ -43,10 +61,7 @@
         document.body.appendChild(overlay);
         let left=5;
         const count=overlay.querySelector('#ccV127RewardCount');
-        const timer=setInterval(()=>{
-          left-=1;count.textContent=String(Math.max(0,left));
-          if(left<=0){clearInterval(timer);overlay.remove();resolve({granted:true,test:true,fallback:true});}
-        },1000);
+        const timer=setInterval(()=>{left-=1;count.textContent=String(Math.max(0,left));if(left<=0){clearInterval(timer);overlay.remove();resolve({granted:true,test:true,fallback:true});}},1000);
       });
     }
 
@@ -57,7 +72,6 @@
           if(result?.granted)return result;
           throw new Error('AD_NOT_GRANTED');
         }catch(error){
-          // 현재는 테스트 APK이므로 Google test inventory 실패 시에도 기능 검증이 가능하게 폴백한다.
           console.warn('Rewarded test ad failed; falling back to internal test screen',error);
           return await devFallback();
         }
@@ -67,9 +81,7 @@
 
     rewardBtn.addEventListener('click',async()=>{
       if(busy)return;
-      busy=true;
-      rewardBtn.disabled=true;
-      rewardBtn.textContent='광고 준비 중…';
+      busy=true;rewardBtn.disabled=true;rewardBtn.textContent='광고 준비 중…';
       try{
         const reward=await showRewarded();
         if(!reward?.granted)throw new Error('AD_NOT_GRANTED');
@@ -80,9 +92,7 @@
         console.error('Rewarded more-design flow failed',error);
         window.showToast?.('광고 시청이 완료되지 않아 시안을 변경하지 않았습니다.',4200);
       }finally{
-        busy=false;
-        rewardBtn.disabled=false;
-        setTimeout(syncLabel,0);
+        busy=false;rewardBtn.disabled=false;setTimeout(syncLabel,0);
       }
     });
 
