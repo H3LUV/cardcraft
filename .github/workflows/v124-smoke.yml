@@ -24,7 +24,10 @@ jobs:
             JS=$(curl -L -sS -o /tmp/v124.js -w '%{http_code}' --max-time 20 "$BASE/v12.4-style-parity.js" || true)
             CSS=$(curl -L -sS -o /tmp/v124.css -w '%{http_code}' --max-time 20 "$BASE/v12.4-style-parity.css" || true)
             CFG=$(curl -L -sS -o /tmp/config.js -w '%{http_code}' --max-time 20 "$BASE/monetization-config.js" || true)
-            if [ "$JS" = '200' ] && [ "$CSS" = '200' ] && [ "$CFG" = '200' ] && grep -q 'cardcraftV124StyleParity' /tmp/v124.js && grep -q 'v12.4-style-parity.js' /tmp/config.js; then
+            if [ "$JS" = '200' ] && [ "$CSS" = '200' ] && [ "$CFG" = '200' ] \
+              && grep -q 'const total=LIBRARY.length' /tmp/v124.js \
+              && grep -q 'cc-v124-style-count' /tmp/v124.css \
+              && grep -q 'v12.4-style-parity.js' /tmp/config.js; then
               OK='true'; break
             fi
             sleep 15
@@ -51,7 +54,7 @@ jobs:
             const payload=JSON.stringify({
               ok:process.env.OK==='true',version:'12.4',url:'https://cardcraft.ahrvks.workers.dev/',
               js_status:process.env.JS,css_status:process.env.CSS,config_status:process.env.CFG,health_status:process.env.HEALTH,
-              features:['same-1000-pool-both-faces','same-style-cards-both-faces','front-match-default','face-aware-library'],
+              features:['same-1000-pool-both-faces','same-style-cards-both-faces','category-counts-1000-200','front-match-default','face-aware-library'],
               source_sha:context.sha,recorded_at:new Date().toISOString()
             },null,2)+'\n';
             let sha;
