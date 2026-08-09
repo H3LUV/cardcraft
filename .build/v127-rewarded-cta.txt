@@ -1,0 +1,4 @@
+Cardcraft V12.7 final rewarded-more build
+- self-rendered rewarded CTA
+- V12.7 loader enabled
+- Android versionCode 127 / versionName 12.7.0
