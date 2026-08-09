@@ -1,7 +1,7 @@
 {
   "status": "success",
   "outcome": "success",
-  "run_id": "31301997679",
+  "run_id": "31302006882",
   "artifact": "cardcraft-android-debug",
   "package_id": "com.h3works.cardcraft",
   "admob_mode": "google-test-rewarded",
@@ -9,6 +9,6 @@
     "cardcraft_export_png",
     "cardcraft_export_source"
   ],
-  "source_sha": "0783a0140684801aacc1f536403c431a68c078a6",
-  "recorded_at": "2026-08-09T07:50:28.391Z"
+  "source_sha": "341ff9e35c751c169f98c88d11b555c35bde45f7",
+  "recorded_at": "2026-08-09T07:50:40.751Z"
 }
