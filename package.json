@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check src/index.js && node --check src/main.js && node --check src/monetization.js && node --check public/monetization.js && node --check public/v11.js && node --check public/v11-commerce-patch.js && node --check public/v12.js && node --check public/v12.2-fixes.js && node --check public/v12.3-faces.js && node --check public/v12.4-style-parity.js && node --check public/native-app-bridge.js",
+    "check": "node --check src/index.js && node --check src/main.js && node --check src/monetization.js && node --check public/monetization.js && node --check public/v11.js && node --check public/v11-commerce-patch.js && node --check public/v12.js && node --check public/v12.2-fixes.js && node --check public/v12.3-faces.js && node --check public/v12.4-style-parity.js && node --check public/v12.5-ad-test.js && node --check public/native-app-bridge.js",
     "dev": "wrangler dev",
     "deploy": "npm run check && wrangler deploy",
     "android:add": "cap add android",
