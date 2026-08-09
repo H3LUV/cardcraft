@@ -9,9 +9,10 @@
   "features": [
     "same-1000-pool-both-faces",
     "same-style-cards-both-faces",
+    "category-counts-1000-200",
     "front-match-default",
     "face-aware-library"
   ],
-  "source_sha": "7b834a56922bd7332dbb523a056843e305d36699",
-  "recorded_at": "2026-08-08T10:36:18.262Z"
+  "source_sha": "52660cfcab42698d758dfe2407b46bfbc9512e73",
+  "recorded_at": "2026-08-09T07:25:45.523Z"
 }
