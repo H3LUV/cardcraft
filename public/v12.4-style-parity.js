@@ -75,11 +75,11 @@
           setText(document.querySelector('.styles-panel .panel-heading h2'),back?'뒷면 스타일 선택':'앞면 스타일 선택');
           setText(document.querySelector('.styles-panel .panel-heading .section-label'),back?'02 · BACK STYLE':'02 · FRONT STYLE');
           setText(document.getElementById('libraryBtn'),`▦ ${back?'뒷면':'앞면'} 전체 ${total.toLocaleString('ko-KR')}개 보기`);
-          setText(document.getElementById('regenerateBtn'),back?'↻ 뒷면 다시 추천':'↻ 앞면 다시 추천');
+          setText(document.getElementById('regenerateBtn'),back?'▶ 광고 보고 다른 뒷면 시안 보기':'▶ 광고 보고 다른 앞면 시안 보기');
           setText(document.getElementById('variantHeading'),`${back?'뒷면':'앞면'} ${total.toLocaleString('ko-KR')}개 디자인 중 추천 시안 5개`);
           setText(document.querySelector('.variants-heading p'),back
             ?`기본은 앞면과 같은 디자인입니다. 원하면 앞면과 동일한 ${total.toLocaleString('ko-KR')}개 디자인 풀에서 뒷면만 별도로 선택할 수 있습니다.`
-            :`동일한 ${total.toLocaleString('ko-KR')}개 디자인 풀에서 업종과 브랜드에 맞는 앞면 시안을 추천합니다.`);
+            :`동일한 ${total.toLocaleString('ko-KR')}개 디자인 풀에서 업종과 브랜드에 맞는 앞면 시안을 추천합니다. 다른 추천 5개를 볼 때 보상형 광고 1회를 시청합니다.`);
           setText(document.querySelector('#templateModal .section-label'),'1,000 TEMPLATE LIBRARY');
 
           const modalTitle=document.getElementById('templateModalTitle');
@@ -94,7 +94,6 @@
       });
     }
 
-    // 기존 renderStyles가 STYLE_META를 다시 그릴 때마다 동일한 카탈로그 수를 유지한다.
     if(typeof renderStyles==='function'&&!renderStyles.__ccV124Patched){
       const baseRenderStyles=renderStyles;
       const wrapped=function(){baseRenderStyles();syncStyleUi();};
