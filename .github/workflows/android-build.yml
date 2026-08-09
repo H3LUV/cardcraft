@@ -51,6 +51,7 @@ jobs:
           cp native/android/com/h3works/cardcraft/*.java "$TARGET/"
           python - <<'PY'
           from pathlib import Path
+          import re
 
           gradle=Path('android/app/build.gradle')
           s=gradle.read_text()
@@ -58,6 +59,8 @@ jobs:
           if needle not in s: raise SystemExit('Gradle dependencies block not found')
           deps='''dependencies {\n    implementation "com.google.android.gms:play-services-ads:25.4.0"\n    implementation "com.android.billingclient:billing:9.1.0"'''
           s=s.replace(needle,deps,1)
+          s=re.sub(r'versionCode\s+\d+', 'versionCode 127', s, count=1)
+          s=re.sub(r'versionName\s+["\'][^"\']+["\']', 'versionName "12.7.0"', s, count=1)
           gradle.write_text(s)
 
           manifest=Path('android/app/src/main/AndroidManifest.xml')
@@ -102,6 +105,8 @@ jobs:
               run_id: String(context.runId),
               artifact: apkExists ? 'cardcraft-android-debug' : '',
               package_id: 'com.h3works.cardcraft',
+              version_name: '12.7.0',
+              version_code: 127,
               admob_mode: 'google-test-rewarded',
               billing_products: ['cardcraft_export_png','cardcraft_export_source'],
               source_sha: context.sha,
